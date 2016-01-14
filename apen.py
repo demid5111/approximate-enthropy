@@ -3,10 +3,10 @@ from math import log
 __author__ = 'demidovs'
 
 class ApEn:
-	def __init__(self,m,r):
+	def __init__(self,m):
 		self.N = -1
 		self.m = m
-		self.r = r
+		self.r = -1
 		self.u_list = []
 		self.x_list = []
 		self.c_list = []
@@ -18,6 +18,7 @@ class ApEn:
 				self.u_list.append(int(val.strip()))
 		assert self.u_list, "File is either missed or corrupted"
 		assert len(self.u_list)>=300, "Sample length is too small. Need more than 300"
+		self.N = len(self.u_list)
 
 	def create_vectors(self,m):
 		self.x_list = []
@@ -34,11 +35,12 @@ class ApEn:
 
 	def calculate_c(self,m):
 		self.c_list = []
+		assert self.r >= 0, "Filtering threshold should be positive"
 		for i in range(0,self.N-m+1):
 			similar_vectors = 0
 			for j in range(0,self.N-m+1):
 				res = self.calculate_distance(self.x_list[i],self.x_list[j])
-				if (res < r):
+				if (res < self.r):
 					similar_vectors += 1
 			self.c_list.append(similar_vectors/(self.N-m+1))
 
@@ -48,7 +50,7 @@ class ApEn:
 		       *((self.N-m+1)**(-1))
 
 	def calculate_final(self,m):
-		self.N = len(self.u_list)
+
 		# 3. Form a sequence of vectors so that
 		# x[i] = [u[i],u[i+1],...,u[i+m-1]]
 		# i ~ 0:N-m because indexes start from 0
@@ -65,19 +67,23 @@ class ApEn:
 	def calculate_apen(self,m):
 		return self.calculate_final(m) - self.calculate_final(m+1)
 
+	def calculate_deviation(self):
+		total_sum_norm = sum(self.u_list)/self.N
+		self.r = (sum([(i - total_sum_norm)**2
+		                           for i in self.u_list])
+		                      /(self.N-1))**(1/2)
+
+
 if __name__ == "__main__":
 	# 2. Fix m and r
 	# TODO: compute r later as the value from the deviation
 	m = 2 # m is 2 in our case
 	r = 500 # r is now random, not sure which are real values
 
-	apEn = ApEn(m=2,r=500)
+	apEn = ApEn(m=2)
 	# 1. Read values: u(1), u(2),...,u(N)
 	apEn.read_series("data/sample.dat")
-
-	apEn.calculate_apen(m=m)
-	apEn.calculate_apen(m=m+1)
-
+	apEn.calculate_deviation()
 
 	res1 = apEn.calculate_apen(m=m)
 	print(res1)
