@@ -1,5 +1,6 @@
 from math import log
-
+import tkinter as tk
+from tkinter import filedialog
 __author__ = 'demidovs'
 
 class ApEn:
@@ -87,3 +88,9 @@ if __name__ == "__main__":
 
 	res1 = apEn.calculate_apen(m=m)
 	print(res1)
+
+
+    #
+	# root = tk.Tk()
+	# root.withdraw()
+	file_path = filedialog.askopenfilename()
