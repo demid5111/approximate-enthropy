@@ -1,37 +1,62 @@
-from tkinter import *
-from tkinter import ttk
+import sys
+from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
+                             QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog)
 
-def calculate(*args):
-    try:
-        value = float(feet.get())
-        meters.set((0.3048 * value * 10000.0 + 0.5)/10000.0)
-    except ValueError:
-        pass
 
-root = Tk()
-root.title("Feet to Meters")
+class ApEnWidget(QWidget):
 
-mainframe = ttk.Frame(root, padding="3 3 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-mainframe.columnconfigure(0, weight=1)
-mainframe.rowconfigure(0, weight=1)
+    def __init__(self):
+        super().__init__()
 
-feet = StringVar()
-meters = StringVar()
+        self.initUI()
 
-feet_entry = ttk.Entry(mainframe, width=7, textvariable=feet)
-feet_entry.grid(column=2, row=1, sticky=(W, E))
 
-ttk.Label(mainframe, textvariable=meters).grid(column=2, row=2, sticky=(W, E))
-ttk.Button(mainframe, text="Calculate ApEn", command=calculate).grid(column=3, row=3, sticky=W)
+    def initUI(self):
 
-ttk.Label(mainframe, text="m").grid(column=3, row=1, sticky=W)
-# ttk.Label(mainframe, text="is equivalent to").grid(column=1, row=2, sticky=E)
-# ttk.Label(mainframe, text="meters").grid(column=3, row=2, sticky=W)
+        mLabel = QLabel('m')
+        mEdit = QLineEdit()
 
-for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
+        nLabel = QLabel('Minumum size')
+        nEdit = QLineEdit('30')
 
-feet_entry.focus()
-root.bind('<Return>', calculate)
+        fileNamesLabel = QLabel("Files to analyze")
+        self.fileNamesEdit = QTextEdit()
+        fileNamesOpen = QPushButton("Open files",self)
+        fileNamesOpen.clicked.connect(self.showFileChooser)
 
-root.mainloop()
+        apEnCalculate = QPushButton("Calculate ApEn",self)
+
+        grid = QGridLayout()
+        grid.setSpacing(10)
+
+        grid.addWidget(mLabel, 1, 0)
+        grid.addWidget(mEdit, 1, 1)
+
+        grid.addWidget(fileNamesLabel, 2, 0)
+        grid.addWidget(self.fileNamesEdit, 2, 1)
+        grid.addWidget(fileNamesOpen, 2, 2)
+
+        grid.addWidget(apEnCalculate, 3, 1, 3, 1)
+
+        self.setLayout(grid)
+
+        self.setGeometry(300, 300, 350, 300)
+        self.setWindowTitle('Review')
+        self.show()
+
+    def showFileChooser(self):
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', ("DAT (*.dat)"))
+        self.fileNamesEdit.setText("")
+        print(fname)
+        for name in fname[0]:
+            self.fileNamesEdit.append(name)
+
+
+
+
+
+if __name__ == '__main__':
+
+    app = QApplication(sys.argv)
+    ex = ApEnWidget()
+    sys.exit(app.exec_())
