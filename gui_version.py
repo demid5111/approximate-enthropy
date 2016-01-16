@@ -27,7 +27,7 @@ class ApEnWidget(QWidget):
         fileNamesOpen.clicked.connect(self.showFileChooser)
 
         apEnCalculate = QPushButton("Calculate ApEn",self)
-        fileNamesOpen.clicked.connect(self.calculateApEn)
+        apEnCalculate.clicked.connect(self.calculateApEn)
 
         grid = QGridLayout()
         grid.setSpacing(10)
@@ -47,13 +47,6 @@ class ApEnWidget(QWidget):
         self.setWindowTitle('Review')
         self.show()
 
-    def showFileChooser(self):
-        fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', ("DAT (*.dat)"))
-        self.fileNamesEdit.setText("")
-        print(fname)
-        for name in fname[0]:
-            self.fileNamesEdit.append(name)
-
     def calculateApEn(self):
         results = []
         tmp = None
@@ -66,6 +59,15 @@ class ApEnWidget(QWidget):
             except ValueError:
                 results.append("Error!")
         makeReport(filesList=filesList,apEnList=results)
+
+    def showFileChooser(self):
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', ("DAT (*.dat)"))
+        self.fileNamesEdit.setText("")
+        print(fname)
+        for name in fname[0]:
+            self.fileNamesEdit.append(name)
+
+
 
 if __name__ == '__main__':
 
