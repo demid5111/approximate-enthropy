@@ -2,6 +2,8 @@ import sys
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
                              QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog)
 
+from apen import ApEn, makeReport
+
 
 class ApEnWidget(QWidget):
 
@@ -14,7 +16,7 @@ class ApEnWidget(QWidget):
     def initUI(self):
 
         mLabel = QLabel('m')
-        mEdit = QLineEdit()
+        self.mEdit = QLineEdit()
 
         nLabel = QLabel('Minumum size')
         nEdit = QLineEdit('30')
@@ -25,12 +27,13 @@ class ApEnWidget(QWidget):
         fileNamesOpen.clicked.connect(self.showFileChooser)
 
         apEnCalculate = QPushButton("Calculate ApEn",self)
+        fileNamesOpen.clicked.connect(self.calculateApEn)
 
         grid = QGridLayout()
         grid.setSpacing(10)
 
         grid.addWidget(mLabel, 1, 0)
-        grid.addWidget(mEdit, 1, 1)
+        grid.addWidget(self.mEdit, 1, 1)
 
         grid.addWidget(fileNamesLabel, 2, 0)
         grid.addWidget(self.fileNamesEdit, 2, 1)
@@ -51,9 +54,18 @@ class ApEnWidget(QWidget):
         for name in fname[0]:
             self.fileNamesEdit.append(name)
 
-
-
-
+    def calculateApEn(self):
+        results = []
+        tmp = None
+        filesList = self.fileNamesEdit.toPlainText().split('\n')
+        for i in filesList:
+            try:
+                m = m=int(self.mEdit.text())
+                tmp = ApEn(m=m)
+                results.append(tmp.prepare_calculate_apen(m=m,series=i))
+            except ValueError:
+                results.append("Error!")
+        makeReport(filesList=filesList,apEnList=results)
 
 if __name__ == '__main__':
 

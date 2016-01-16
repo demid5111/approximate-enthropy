@@ -72,6 +72,18 @@ class ApEn:
 		               for i in self.u_list])
 		          / (self.N - 1)) ** (1 / 2)
 
+	def prepare_calculate_apen(self,m,series):
+		tmpApEn = ApEn(m=2)
+		tmpApEn.read_series(series)
+		tmpApEn.calculate_deviation()
+		return tmpApEn.calculate_apen(m=m)
+
+def makeReport(fileName="results/results.csv", filesList = None,apEnList=None):
+	if not filesList:
+		print("Error in generating report")
+	with open(fileName,"w") as f:
+		for index,name in enumerate(filesList):
+			f.write(",".join([name,str(apEnList[index])]) + '\n')
 
 if __name__ == "__main__":
 	# 2. Fix m and r
@@ -86,3 +98,12 @@ if __name__ == "__main__":
 
 	res1 = apEn.calculate_apen(m=m)
 	print(res1)
+
+	# test if there are multiple files
+	series = ["data/sample.dat","data/sample.dat","data/sample.dat"]
+	results = []
+	for i in series:
+		tmpApEn = ApEn(m=2)
+		results.append(ApEn(m=2).prepare_calculate_apen(m=m,series=i))
+
+	makeReport(filesList=series,apEnList=results)
