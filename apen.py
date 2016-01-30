@@ -73,17 +73,17 @@ class ApEn:
 		          / (self.N - 1)) ** (1 / 2)
 
 	def prepare_calculate_apen(self,m,series):
-		tmpApEn = ApEn(m=2)
-		tmpApEn.read_series(series)
-		tmpApEn.calculate_deviation()
-		return tmpApEn.calculate_apen(m=m)
+		# tmpApEn = ApEn(m=2)
+		self.read_series(series)
+		self.calculate_deviation()
+		return self.calculate_apen(m=m)
 
-def makeReport(fileName="results/results.csv", filesList = None,apEnList=None):
+def makeReport(fileName="results/results.csv", filesList = None,apEnList=None,rList=None):
 	if not filesList:
 		print("Error in generating report")
 	with open(fileName,"w") as f:
 		for index,name in enumerate(filesList):
-			f.write(",".join([name,str(apEnList[index])]) + '\n')
+			f.write(",".join([name,str(apEnList[index]),str(rList[index])]) + '\n')
 
 if __name__ == "__main__":
 	# 2. Fix m and r

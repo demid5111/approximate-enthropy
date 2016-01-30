@@ -50,15 +50,17 @@ class ApEnWidget(QWidget):
     def calculateApEn(self):
         results = []
         tmp = None
+        r = []
         filesList = self.fileNamesEdit.toPlainText().split('\n')
         for i in filesList:
             try:
                 m=int(self.mEdit.text())
                 tmp = ApEn(m=m)
                 results.append(tmp.prepare_calculate_apen(m=m,series=i))
+                r.append(tmp.r)
             except ValueError:
                 results.append("Error!")
-        makeReport(filesList=filesList,apEnList=results)
+        makeReport(filesList=filesList,apEnList=results,rList=r)
 
     def showFileChooser(self):
         fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', ("DAT (*.dat, *.txt)"))
