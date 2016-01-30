@@ -16,7 +16,7 @@ class ApEnWidget(QWidget):
     def initUI(self):
 
         mLabel = QLabel('m')
-        self.mEdit = QLineEdit()
+        self.mEdit = QLineEdit("2")
 
         nLabel = QLabel('Minumum size')
         nEdit = QLineEdit('30')
@@ -53,7 +53,7 @@ class ApEnWidget(QWidget):
         filesList = self.fileNamesEdit.toPlainText().split('\n')
         for i in filesList:
             try:
-                m = m=int(self.mEdit.text())
+                m=int(self.mEdit.text())
                 tmp = ApEn(m=m)
                 results.append(tmp.prepare_calculate_apen(m=m,series=i))
             except ValueError:
@@ -61,7 +61,7 @@ class ApEnWidget(QWidget):
         makeReport(filesList=filesList,apEnList=results)
 
     def showFileChooser(self):
-        fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', ("DAT (*.dat)"))
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', ("DAT (*.dat, *.txt)"))
         self.fileNamesEdit.setText("")
         print(fname)
         for name in fname[0]:

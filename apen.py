@@ -16,7 +16,7 @@ class ApEn:
 		self.u_list = []
 		with open(fileName, "r") as f:
 			for val in f.readlines():
-				self.u_list.append(int(val.strip()))
+				self.u_list.append(float(val.strip()))
 		assert self.u_list, "File is either missed or corrupted"
 		assert len(self.u_list) >= 300, "Sample length is too small. Need more than 300"
 		self.N = len(self.u_list)
@@ -93,17 +93,17 @@ if __name__ == "__main__":
 
 	apEn = ApEn(m=2)
 	# 1. Read values: u(1), u(2),...,u(N)
-	apEn.read_series("data/sample.dat")
+	apEn.read_series("data/data1.txt")
 	apEn.calculate_deviation()
-
+	print(apEn.r)
+	apEn.r = 3
 	res1 = apEn.calculate_apen(m=m)
 	print(res1)
-
-	# test if there are multiple files
-	series = ["data/sample.dat","data/sample.dat","data/sample.dat"]
-	results = []
-	for i in series:
-		tmpApEn = ApEn(m=2)
-		results.append(ApEn(m=2).prepare_calculate_apen(m=m,series=i))
-
-	makeReport(filesList=series,apEnList=results)
+	# # test if there are multiple files
+	# series = ["data/sample.dat","data/sample.dat","data/sample.dat"]
+	# results = []
+	# for i in series:
+	# 	tmpApEn = ApEn(m=2)
+	# 	results.append(ApEn(m=2).prepare_calculate_apen(m=m,series=i))
+	#
+	# makeReport(filesList=series,apEnList=results)
