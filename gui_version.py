@@ -56,7 +56,8 @@ class ApEnWidget(QWidget):
             try:
                 m=int(self.mEdit.text())
                 tmp = ApEn(m=m)
-                results.append(tmp.prepare_calculate_apen(m=m,series=i))
+                res = tmp.prepare_calculate_apen(m=m,series=i)
+                results.append('{0:.10f}'.format(res))
                 r.append(tmp.r)
             except ValueError:
                 results.append("Error!")
