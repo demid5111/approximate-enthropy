@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
-                             QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog)
+                             QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog, QMessageBox)
 
 from apen import ApEn, makeReport
 
@@ -60,6 +60,12 @@ class ApEnWidget(QWidget):
                 res = tmp.prepare_calculate_apen(m=m,series=i)
                 results.append('{0:.10f}'.format(res))
                 r.append(tmp.r)
+                dialog =  QMessageBox(self)
+                dialog.setWindowModality(False)
+                dialog.setText("ApEn calculated for " + i)
+                # information(self,"ApEn","ApEn calculated for " + i);
+                # dialog.setText("MESSAGE")
+                dialog.show()
             except ValueError:
                 results.append("Error!")
         makeReport(filesList=filesList,apEnList=results,rList=r)
