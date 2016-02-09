@@ -1,3 +1,4 @@
+import os
 import sys
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
                              QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog)
@@ -9,7 +10,7 @@ class ApEnWidget(QWidget):
 
     def __init__(self):
         super().__init__()
-
+        self.fileName = ".memory"
         self.initUI()
 
 
@@ -64,11 +65,25 @@ class ApEnWidget(QWidget):
         makeReport(filesList=filesList,apEnList=results,rList=r)
 
     def showFileChooser(self):
-        fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', ("DAT (*.dat, *.txt)"))
+        path = ""
+        try:
+            with open (self.fileName,"r") as f:
+                path = f.readline().strip()
+        except FileNotFoundError:
+            pass
+        fname = QFileDialog.getOpenFileNames(self,  'Open file', path, ("DAT (*.dat, *.txt)"))
         self.fileNamesEdit.setText("")
         print(fname)
         for name in fname[0]:
             self.fileNamesEdit.append(name)
+        self.memorizeLastPath()
+
+    def memorizeLastPath(self):
+        if not self.fileNamesEdit:
+            return
+        path = os.path.dirname(self.fileNamesEdit.toPlainText().split('\n')[0])
+        with open(self.fileName,"w") as f:
+            f.write(path+'/')
 
 
 
