@@ -64,7 +64,7 @@ class ApEn:
 		return res1
 
 	def calculate_apen(self, m):
-		return self.calculate_final(m) - self.calculate_final(m + 1)
+		return abs(self.calculate_final(m) - self.calculate_final(m + 1))
 
 	def calculate_deviation(self):
 		total_sum_norm = sum(self.u_list) / self.N
