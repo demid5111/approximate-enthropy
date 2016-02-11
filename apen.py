@@ -83,7 +83,7 @@ def makeReport(fileName="results/results.csv", filesList = None,apEnList=None,rL
 		print("Error in generating report")
 	with open(fileName,"w") as f:
 		for index,name in enumerate(filesList):
-			f.write(",".join([name,str(apEnList[index]),str(rList[index])]) + '\n')
+			f.write(",".join(['\"'+name+'\"',str(apEnList[index]),str(rList[index])]) + '\n')
 
 if __name__ == "__main__":
 	# 2. Fix m and r
