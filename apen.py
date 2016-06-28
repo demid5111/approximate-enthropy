@@ -71,7 +71,7 @@ class ApEn:
         return self.calculate_final(m) - self.calculate_final(m + 1)
 
     def calculate_deviation(self, seq):
-        total_sum_norm = sum() / self.N
+        total_sum_norm = sum(self.u_list) / self.N
         return (sum([(i - total_sum_norm) ** 2
                      for i in seq])
                 / (self.N - 1)) ** (1 / 2)

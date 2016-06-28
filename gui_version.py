@@ -2,7 +2,7 @@ import os
 import sys
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
                              QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog, QRadioButton, QButtonGroup,
-                             QHBoxLayout, QCheckBox, QBoxLayout, QVBoxLayout)
+                             QHBoxLayout, QCheckBox, QBoxLayout, QVBoxLayout, QMessageBox)
 
 from apen import ApEn, makeReport
 from supporting import CalculationType
