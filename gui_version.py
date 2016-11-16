@@ -2,15 +2,15 @@ import os
 import sys
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
                              QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog, QRadioButton, QButtonGroup,
-                             QHBoxLayout, QCheckBox, QBoxLayout, QVBoxLayout, QMessageBox)
+                             QHBoxLayout, QCheckBox, QBoxLayout, QVBoxLayout, QMessageBox, QMainWindow, QTabWidget)
 
 from apen import ApEn, makeReport
 from supporting import CalculationType
 
 
 class ApEnWidget(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super(QWidget, self).__init__(parent)
         self.fileName = ".memory"
         self.initUI()
 
@@ -56,12 +56,29 @@ class ApEnWidget(QWidget):
         apEnCalculate = QPushButton("Calculate ApEn", self)
         apEnCalculate.clicked.connect(self.calculateApEn)
 
-        grid = QGridLayout()
-        self.setLayout(grid)
-        # self.layout().setSpacing(10)
+        # self.move(300, 150)
+        # self.setWindowTitle('Calculator')
+        # self.show()
 
-        grid.addWidget(mLabel,0,0)
-        grid.addWidget(self.mEdit,0,1)
+        self.layout = QVBoxLayout(self)
+
+        # Initialize tab screen
+        self.tabs = QTabWidget()
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.tabs.resize(300, 200)
+
+        # Add tabs
+        self.tabs.addTab(self.tab1, "ApEn")
+        self.tabs.addTab(self.tab2, "SampEn")
+
+        # Create first tab
+
+        grid = QGridLayout()
+        self.tab1.layout = grid
+        #
+        grid.addWidget(mLabel, 0, 0)
+        grid.addWidget(self.mEdit, 0, 1)
 
         grid.addWidget(cb, 1, 0)
         grid.addWidget(self.rThreshold, 1, 1)
@@ -73,13 +90,35 @@ class ApEnWidget(QWidget):
         grid.addWidget(self.fileNamesEdit, 3, 1)
         grid.addWidget(fileNamesOpen, 3, 2)
 
-
         grid.addWidget(apEnCalculate, 4, 1, 3, 1)
 
-        self.move(300, 150)
-        self.setWindowTitle('Calculator')
-        self.show()
+        self.tab1.setLayout(self.tab1.layout)
 
+        # Second tab
+        grid2 = QGridLayout()
+        self.tab2.layout = grid2
+
+        m2Label = QLabel('m')
+        self.m2Edit = QLineEdit("2")
+
+        grid2.addWidget(m2Label, 0, 0)
+        grid2.addWidget(self.m2Edit, 0, 1)
+
+        sampEnCalculate = QPushButton("Calculate SampEn", self)
+        sampEnCalculate.clicked.connect(self.sampEnCalculate)
+
+        grid2.addWidget(sampEnCalculate, 1, 1, 3, 1)
+        self.tab2.setLayout(self.tab2.layout)
+
+        # Add tabs to widget
+        self.layout.addWidget(self.tabs)
+        self.setLayout(self.layout)
+
+    def sampEnCalculate(self):
+        dialog = QMessageBox(self)
+        dialog.setWindowModality(False)
+        dialog.setText("SampEn calculated")
+        dialog.show()
 
     def calculateApEn(self):
         results = []
@@ -95,6 +134,7 @@ class ApEnWidget(QWidget):
         if self.calculateR == CalculationType.DEV:
             devCoefValue = self.rDevCoef.text()
         # 3. make all enthropy calculations
+        filesSuccess = []
         for i in filesList:
             try:
                 m = int(self.mEdit.text())
@@ -102,32 +142,33 @@ class ApEnWidget(QWidget):
                 thresholdValue = int(thresholdValue)
                 devCoefValue = float(devCoefValue)
                 res = tmp.prepare_calculate_apen(m=m,
-                                                          series=i,
-                                                          calculationType=self.calculateR,
-                                                          devCoefValue=devCoefValue,
-                                                          useThreshold=self.isThresholdUsed,
-                                                          thresholdValue=thresholdValue)
+                                                 series=i,
+                                                 calculationType=self.calculateR,
+                                                 devCoefValue=devCoefValue,
+                                                 useThreshold=self.isThresholdUsed,
+                                                 thresholdValue=thresholdValue)
                 results.append('{0:.10f}'.format(res))
+                filesSuccess.append(i)
                 r.append(tmp.r)
-                dialog =  QMessageBox(self)
-                dialog.setWindowModality(False)
-                dialog.setText("ApEn calculated for " + i)
-                # information(self,"ApEn","ApEn calculated for " + i);
-                # dialog.setText("MESSAGE")
-                dialog.show()
             except ValueError:
-                results.append("Error!")
+                results.append("Error! For file {}".format(i))
+        dialog = QMessageBox(self)
+        dialog.setWindowModality(False)
+        dialog.setText("ApEn calculated for: \n {}"
+                       .format("".join(["- {}, \n".format(i) for i in filesSuccess])))
+        # information(self,"ApEn","ApEn calculated for " + i);
+        # dialog.setText("MESSAGE")
+        dialog.show()
         makeReport(filesList=filesList, apEnList=results, rList=r)
-
 
     def showFileChooser(self):
         path = ""
         try:
-            with open (self.fileName,"r") as f:
+            with open(self.fileName, "r") as f:
                 path = f.readline().strip()
         except FileNotFoundError:
             pass
-        fname = QFileDialog.getOpenFileNames(self,  'Open file', path, ("DAT (*.dat, *.txt)"))
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', path, ("DAT (*.dat, *.txt)"))
         self.fileNamesEdit.setText("")
         print(fname)
         for name in fname[0]:
@@ -138,8 +179,8 @@ class ApEnWidget(QWidget):
         if not self.fileNamesEdit:
             return
         path = os.path.dirname(self.fileNamesEdit.toPlainText().split('\n')[0])
-        with open(self.fileName,"w") as f:
-            f.write(path+'/')
+        with open(self.fileName, "w") as f:
+            f.write(path + '/')
 
     def toogleThresholdCheckbox(self):
         self.isThresholdUsed = not self.isThresholdUsed
@@ -158,8 +199,24 @@ class ApEnWidget(QWidget):
         self.rDevCoef.setEnabled(True)
 
 
+class App(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.title = 'HeartAlgo-Analyzer'
+        self.left = 0
+        self.top = 0
+        self.width = 300
+        self.height = 200
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
+
+        self.table_widget = ApEnWidget(self)
+        self.setCentralWidget(self.table_widget)
+
+        self.show()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = ApEnWidget()
+    ex = App()
     sys.exit(app.exec_())
