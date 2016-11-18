@@ -126,6 +126,7 @@ class ApEnWidget(QWidget):
         results = []
         tmp = None
         r = []
+        n = []
         filesList = self.fileNamesEdit.toPlainText().split('\n')
         # 1. decide whether to use threshold or not
         thresholdValue = -1
@@ -152,6 +153,7 @@ class ApEnWidget(QWidget):
                 results.append('{0:.10f}'.format(res))
                 filesSuccess.append(i)
                 r.append(tmp.r)
+                n.append(tmp.N)
             except ValueError:
                 results.append("Error! For file {}".format(i))
         dialog = QMessageBox(self)
@@ -161,7 +163,7 @@ class ApEnWidget(QWidget):
         # information(self,"ApEn","ApEn calculated for " + i);
         # dialog.setText("MESSAGE")
         dialog.show()
-        makeReport(filesList=filesList, apEnList=results, rList=r)
+        makeReport(filesList=filesList, apEnList=results, rList=r, nList=n)
 
     def calculateApEn(self):
         results = []

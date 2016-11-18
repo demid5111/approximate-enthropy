@@ -95,12 +95,15 @@ class ApEn:
         return self.calculate_apen(m=m)
 
 
-def makeReport(fileName="results/results.csv", filesList=None, apEnList=None, rList=None):
+def makeReport(fileName="results/results.csv", filesList=None, apEnList=None, rList=None, nList=None):
     if not filesList:
         print("Error in generating report")
     with open(fileName, "w") as f:
         for index, name in enumerate(filesList):
-            f.write(",".join(['\"' + name + '\"', str(apEnList[index]), str(rList[index])]) + '\n')
+            if nList:
+                f.write(",".join(['\"' + name + '\"', str(apEnList[index]), str(rList[index]), str(nList[index])]) + '\n')
+            else:
+                f.write(",".join(['\"' + name + '\"', str(apEnList[index]), str(rList[index])]) + '\n')
 
 
 if __name__ == "__main__":
@@ -111,12 +114,11 @@ if __name__ == "__main__":
 
     apEn = ApEn(m=2)
     # 1. Read values: u(1), u(2),...,u(N)
-    apEn.read_series("data/data1.txt")
+    apEn.read_series("data/samp_en/ApEn_SampEn.txt", False, 0)
     apEn.calculate_deviation(apEn.u_list)
-    print(apEn.r)
     apEn.r = 3
     res1 = apEn.calculate_apen(m=m)
-    print(res1)
+    print("ApEn for data/samp_en/ApEn_SampEn.txt", res1)
 # # test if there are multiple files
 # series = ["data/sample.dat","data/sample.dat","data/sample.dat"]
 # results = []
