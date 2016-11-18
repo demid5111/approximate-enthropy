@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
                              QHBoxLayout, QCheckBox, QBoxLayout, QVBoxLayout, QMessageBox, QMainWindow, QTabWidget)
 
 from apen import ApEn, makeReport
+from sampen import SampEn
 from supporting import CalculationType
 
 
@@ -53,6 +54,9 @@ class ApEnWidget(QWidget):
         fileNamesOpen = QPushButton("Open files", self)
         fileNamesOpen.clicked.connect(self.showFileChooser)
 
+        fileNamesClean = QPushButton("Clean files", self)
+        fileNamesClean.clicked.connect(self.cleanFileNames)
+
         apEnCalculate = QPushButton("Calculate ApEn", self)
         apEnCalculate.clicked.connect(self.calculateApEn)
 
@@ -65,12 +69,12 @@ class ApEnWidget(QWidget):
         # Initialize tab screen
         self.tabs = QTabWidget()
         self.tab1 = QWidget()
-        self.tab2 = QWidget()
+        # self.tab2 = QWidget()
         self.tabs.resize(300, 200)
 
         # Add tabs
-        self.tabs.addTab(self.tab1, "ApEn")
-        self.tabs.addTab(self.tab2, "SampEn")
+        self.tabs.addTab(self.tab1, "Enthropy")
+        # self.tabs.addTab(self.tab2, "SampEn")
 
         # Create first tab
 
@@ -84,41 +88,80 @@ class ApEnWidget(QWidget):
         grid.addWidget(self.rThreshold, 1, 1)
 
         grid.addWidget(rLabel, 2, 0)
-        grid.addLayout(number_group, 2, 1)
+        grid.addLayout(number_group, 3, 1)
 
         grid.addWidget(fileNamesLabel, 3, 0)
         grid.addWidget(self.fileNamesEdit, 3, 1)
         grid.addWidget(fileNamesOpen, 3, 2)
+        grid.addWidget(fileNamesClean, 3, 3)
 
         grid.addWidget(apEnCalculate, 4, 1, 3, 1)
 
         self.tab1.setLayout(self.tab1.layout)
 
         # Second tab
-        grid2 = QGridLayout()
-        self.tab2.layout = grid2
-
-        m2Label = QLabel('m')
-        self.m2Edit = QLineEdit("2")
-
-        grid2.addWidget(m2Label, 0, 0)
-        grid2.addWidget(self.m2Edit, 0, 1)
-
+        # grid2 = QGridLayout()
+        # self.tab2.layout = grid2
+        #
+        # m2Label = QLabel('m')
+        # self.m2Edit = QLineEdit("2")
+        #
+        # grid2.addWidget(m2Label, 0, 0)
+        # grid2.addWidget(self.m2Edit, 0, 1)
+        #
         sampEnCalculate = QPushButton("Calculate SampEn", self)
         sampEnCalculate.clicked.connect(self.sampEnCalculate)
 
-        grid2.addWidget(sampEnCalculate, 1, 1, 3, 1)
-        self.tab2.setLayout(self.tab2.layout)
+        grid.addWidget(sampEnCalculate, 7, 1, 3, 1)
+        # self.tab2.setLayout(self.tab2.layout)
 
         # Add tabs to widget
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
+    def cleanFileNames(self):
+        self.fileNamesEdit.clear()
+
     def sampEnCalculate(self):
+        results = []
+        tmp = None
+        r = []
+        filesList = self.fileNamesEdit.toPlainText().split('\n')
+        # 1. decide whether to use threshold or not
+        thresholdValue = -1
+        devCoefValue = -1
+        if self.isThresholdUsed:
+            thresholdValue = self.rThreshold.text()
+        # 2. choose the way to calculate r
+        if self.calculateR == CalculationType.DEV:
+            devCoefValue = self.rDevCoef.text()
+        # 3. make all enthropy calculations
+        filesSuccess = []
+        for i in filesList:
+            try:
+                m = int(self.mEdit.text())
+                tmp = SampEn(m=m)
+                thresholdValue = int(thresholdValue)
+                devCoefValue = float(devCoefValue)
+                res = tmp.prepare_calculate_sampen(m=m,
+                                                 series=i,
+                                                 calculationType=self.calculateR,
+                                                 devCoefValue=devCoefValue,
+                                                 useThreshold=self.isThresholdUsed,
+                                                 thresholdValue=thresholdValue)
+                results.append('{0:.10f}'.format(res))
+                filesSuccess.append(i)
+                r.append(tmp.r)
+            except ValueError:
+                results.append("Error! For file {}".format(i))
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
-        dialog.setText("SampEn calculated")
+        dialog.setText("SampEn calculated for: \n {}"
+                       .format("".join(["- {}, \n".format(i) for i in filesSuccess])))
+        # information(self,"ApEn","ApEn calculated for " + i);
+        # dialog.setText("MESSAGE")
         dialog.show()
+        makeReport(filesList=filesList, apEnList=results, rList=r)
 
     def calculateApEn(self):
         results = []

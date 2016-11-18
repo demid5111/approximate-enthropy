@@ -38,6 +38,21 @@ class SampEn(ApEn):
     def calculate_sampen(self, m):
         return -log(self.calculate_final(m+1)/self.calculate_final(m))
 
+    def prepare_calculate_sampen(self, m, series, calculationType, devCoefValue, useThreshold, thresholdValue):
+        # tmpApEn = ApEn(m=2)
+        self.read_series(series, useThreshold, thresholdValue)
+        self.r = self.calculate_deviation(self.u_list)
+
+        if calculationType == CalculationType.CONST:
+            self.r *= 0.2
+        elif calculationType == CalculationType.DEV:
+            self.r *= devCoefValue
+        elif calculationType == CalculationType.COMPLEX:
+            sddsDeviation = self.makeSDDS(self.u_list)
+            self.r = (-0.036 + 0.26 * (sddsDeviation / self.r) ** (1 / 2)) / ((len(self.u_list) / 1000) ** (1 / 4))
+
+        return self.calculate_sampen(m=m)
+
 if __name__ == "__main__":
     # 2. Fix m and r
     # TODO: compute r later as the value from the deviation
@@ -46,11 +61,49 @@ if __name__ == "__main__":
 
     apEn = SampEn(m=2)
     # 1. Read values: u(1), u(2),...,u(N)
-    apEn.read_series("data/data1.txt", False, 0)
+    apEn.read_series("data/samp_en/0.txt", False, 0)
     apEn.calculate_deviation(apEn.u_list)
     apEn.r = 3
     res1 = apEn.calculate_sampen(m=m)
-    print(res1)
+    print("data/samp_en/0.txt",res1)
+
+    apEn.read_series("data/samp_en/1.txt", False, 0)
+    apEn.calculate_deviation(apEn.u_list)
+    apEn.r = 3
+    res1 = apEn.calculate_sampen(m=m)
+    print("data/samp_en/1.txt", res1)
+
+    apEn.read_series("data/samp_en/1_1.txt", False, 0)
+    apEn.calculate_deviation(apEn.u_list)
+    apEn.r = 3
+    res1 = apEn.calculate_sampen(m=m)
+    print("data/samp_en/1_1.txt", res1)
+
+    apEn.read_series("data/samp_en/2.txt", False, 0)
+    apEn.calculate_deviation(apEn.u_list)
+    apEn.r = 3
+    res1 = apEn.calculate_sampen(m=m)
+    print("data/samp_en/2.txt", res1)
+
+    apEn.read_series("data/samp_en/3.txt", False, 0)
+    apEn.calculate_deviation(apEn.u_list)
+    apEn.r = 3
+    res1 = apEn.calculate_sampen(m=m)
+    print("data/samp_en/3.txt",res1)
+
+    apEn.read_series("data/samp_en/4.txt", False, 0)
+    apEn.calculate_deviation(apEn.u_list)
+    apEn.r = 3
+    res1 = apEn.calculate_sampen(m=m)
+    print("data/samp_en/4.txt", res1)
+
+    apEn.read_series("data/samp_en/ApEn_SampEn.txt", False, 0)
+    apEn.calculate_deviation(apEn.u_list)
+    apEn.r = 3
+    res1 = apEn.calculate_sampen(m=m)
+    print("data/samp_en/ApEn_SampEn.txt", res1)
+
+
 # # test if there are multiple files
 # series = ["data/sample.dat","data/sample.dat","data/sample.dat"]
 # results = []
