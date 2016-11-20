@@ -88,12 +88,18 @@ class ApEnWidget(QWidget):
         grid.addWidget(self.rThreshold, 1, 1)
 
         grid.addWidget(rLabel, 2, 0)
-        grid.addLayout(number_group, 3, 1)
+        grid.addLayout(number_group, 2, 1)
 
         grid.addWidget(fileNamesLabel, 3, 0)
         grid.addWidget(self.fileNamesEdit, 3, 1)
-        grid.addWidget(fileNamesOpen, 3, 2)
-        grid.addWidget(fileNamesClean, 3, 3)
+
+        fileButtonsGroup = QVBoxLayout()
+        fileButtonsGroup.addWidget(fileNamesOpen)
+        fileButtonsGroup.addWidget(fileNamesClean)
+
+        grid.addLayout(fileButtonsGroup, 3, 2)
+        # grid.addWidget(fileNamesOpen, 3, 2)
+        # grid.addWidget(fileNamesClean, 3, 3)
 
         grid.addWidget(apEnCalculate, 4, 1, 3, 1)
 
