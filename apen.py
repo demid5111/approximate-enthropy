@@ -77,7 +77,7 @@ class ApEn:
                 / (self.N - 1)) ** (1 / 2)
 
     def makeSDDS(self, seq):
-        return self.calculate_deviation([seq[i] - seq[i - 1] for i in seq[1:]])
+        return self.calculate_deviation([seq[i] - seq[i - 1] for (i,v) in enumerate(seq[1:])])
 
     def prepare_calculate_apen(self, m, series, calculationType, devCoefValue, useThreshold, thresholdValue):
         # tmpApEn = ApEn(m=2)
