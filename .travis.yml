@@ -9,7 +9,7 @@ install: true
 addons:
   sonarqube:
     token:
-      secure: "09111523dbe766d338255106b15b844d1603d179"
+      secure: "44020085f39b8bc472bb47d48a7ab7840e15a863"
 
 notifications:
   email: false
