@@ -1,0 +1,14 @@
+language: python
+python
+  - "3.5"
+  
+sudo: false
+install: true
+
+addons:
+  sonarqube:
+    token:
+      secure: "09111523dbe766d338255106b15b844d1603d179"
+
+notifications:
+  email: false
