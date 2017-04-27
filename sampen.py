@@ -48,7 +48,7 @@ class SampEn(ApEn):
         elif calculationType == CalculationType.DEV:
             self.r *= devCoefValue
         elif calculationType == CalculationType.COMPLEX:
-            sddsDeviation = self.makeSDDS(self.u_list)
+            sddsDeviation = self.make_sdds(self.u_list)
             self.r = (-0.036 + 0.26 * (sddsDeviation / self.r) ** (1 / 2)) / ((len(self.u_list) / 1000) ** (1 / 4))
 
         return self.calculate_sampen(m=m)

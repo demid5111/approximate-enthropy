@@ -193,7 +193,7 @@ class ApEnWidget(QWidget):
                 thresholdValue = int(thresholdValue)
                 devCoefValue = float(devCoefValue)
                 res = tmp.prepare_calculate_apen(m=m,
-                                                 series=i,
+                                                 file_name=i,
                                                  calculationType=self.calculateR,
                                                  devCoefValue=devCoefValue,
                                                  useThreshold=self.isThresholdUsed,

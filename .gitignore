@@ -4,4 +4,11 @@
 results/
 .gradle
 
+# build artifacts
+build/
+
+# coverage metadata
+htmlcov/
+.coverage
+
 __pycache__/

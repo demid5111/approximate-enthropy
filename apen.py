@@ -1,3 +1,4 @@
+import operator
 from math import log
 
 from supporting import CalculationType
@@ -32,10 +33,7 @@ class ApEn:
 
     def calculate_distance(self, x1, x2):
         assert len(x1) == len(x2), "Vectors should be of equal sizes: " + str(x1) + " : " + str(x2)
-        res = []
-        for i in range(len(x1)):
-            res.append(abs(x1[i] - x2[i]))
-        return max(res)
+        return max(map(abs, map(operator.sub, x1, x2)))
 
     def calculate_c(self, m):
         self.c_list = []
@@ -44,7 +42,7 @@ class ApEn:
             similar_vectors = 0
             for j in range(0, self.N - m + 1):
                 res = self.calculate_distance(self.x_list[i], self.x_list[j])
-                if (res < self.r):
+                if res < self.r:
                     similar_vectors += 1
             self.c_list.append(similar_vectors / (self.N - m + 1))
 
@@ -53,7 +51,6 @@ class ApEn:
                * ((self.N - m + 1) ** (-1))
 
     def calculate_final(self, m):
-
         # 3. Form a sequence of vectors so that
         # x[i] = [u[i],u[i+1],...,u[i+m-1]]
         # i ~ 0:N-m because indexes start from 0
@@ -64,24 +61,24 @@ class ApEn:
         # this is just the respective values subtraction
         self.calculate_c(m=m)
 
-        res1 = self._final(m=m)
-        return res1
+        return self._final(m=m)
 
     def calculate_apen(self, m):
         return self.calculate_final(m) - self.calculate_final(m + 1)
 
     def calculate_deviation(self, seq):
         total_sum_norm = sum(self.u_list) / self.N
-        return (sum([(i - total_sum_norm) ** 2
-                     for i in seq])
-                / (self.N - 1)) ** (1 / 2)
+        return (sum([(i - total_sum_norm) ** 2 for i in seq]) / (self.N)) ** (1 / 2)
 
-    def makeSDDS(self, seq):
+    def make_sdds(self, seq):
         return self.calculate_deviation([seq[i] - seq[i - 1] for (i,v) in enumerate(seq[1:])])
 
-    def prepare_calculate_apen(self, m, series, calculationType, devCoefValue, useThreshold, thresholdValue):
+    def calculate_complex_r(self, sddsDeviation, deviation, len_seq):
+        return (-0.036 + 0.26 * (sddsDeviation / deviation) ** (1 / 2)) / ((len_seq / 1000) ** (1 / 4))
+
+    def prepare_calculate_apen(self, m, file_name, calculationType, devCoefValue, useThreshold, thresholdValue):
         # tmpApEn = ApEn(m=2)
-        self.read_series(series, useThreshold, thresholdValue)
+        self.read_series(file_name, useThreshold, thresholdValue)
         self.r = self.calculate_deviation(self.u_list)
 
         if calculationType == CalculationType.CONST:
@@ -89,8 +86,8 @@ class ApEn:
         elif calculationType == CalculationType.DEV:
             self.r *= devCoefValue
         elif calculationType == CalculationType.COMPLEX:
-            sddsDeviation = self.makeSDDS(self.u_list)
-            self.r = (-0.036 + 0.26 * (sddsDeviation / self.r) ** (1 / 2)) / ((len(self.u_list) / 1000) ** (1 / 4))
+            sdds_deviation = self.make_sdds(self.u_list)
+            self.r = self.calculate_complex_r(sdds_deviation, self.r, len(self.u_list))
 
         return self.calculate_apen(m=m)
 
