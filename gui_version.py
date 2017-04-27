@@ -151,11 +151,11 @@ class ApEnWidget(QWidget):
                 thresholdValue = int(thresholdValue)
                 devCoefValue = float(devCoefValue)
                 res = tmp.prepare_calculate_sampen(m=m,
-                                                 series=i,
-                                                 calculationType=self.calculateR,
-                                                 devCoefValue=devCoefValue,
-                                                 useThreshold=self.isThresholdUsed,
-                                                 thresholdValue=thresholdValue)
+                                                   series=i,
+                                                   calculationType=self.calculateR,
+                                                   devCoefValue=devCoefValue,
+                                                   use_threshold=self.isThresholdUsed,
+                                                   threshold_value=thresholdValue)
                 results.append('{0:.10f}'.format(res))
                 filesSuccess.append(i)
                 r.append(tmp.r)
@@ -194,10 +194,10 @@ class ApEnWidget(QWidget):
                 devCoefValue = float(devCoefValue)
                 res = tmp.prepare_calculate_apen(m=m,
                                                  file_name=i,
-                                                 calculationType=self.calculateR,
-                                                 devCoefValue=devCoefValue,
-                                                 useThreshold=self.isThresholdUsed,
-                                                 thresholdValue=thresholdValue)
+                                                 calculation_type=self.calculateR,
+                                                 dev_coef_value=devCoefValue,
+                                                 use_threshold=self.isThresholdUsed,
+                                                 threshold_value=thresholdValue)
                 results.append('{0:.10f}'.format(res))
                 filesSuccess.append(i)
                 r.append(tmp.r)

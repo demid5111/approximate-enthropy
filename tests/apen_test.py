@@ -68,23 +68,29 @@ class TestApEnPrepareCalculateApEn(unittest.TestCase):
 
     def test_prepare_calculate_const_r(self):
         deviation = 1.41185
-        self.apEn.prepare_calculate_apen(2, os.path.join(constants.DATA_DIR,'ApEn_amolituda_2.txt'), CalculationType.CONST, 0, False, 0)
-        self.assertAlmostEqual(self.apEn.r, deviation * 0.2, places=4, msg='incorrect r')
-        self.apEn.calculate_apen.assert_called_with(m=2)
+        self.apEn.read_series(os.path.join(constants.DATA_DIR,'ApEn_amolituda_2.txt'), False, 0)
+        r = self.apEn.calculate_r(CalculationType.CONST,deviation,0, self.apEn.u_list)
+        self.assertAlmostEqual(r, deviation * 0.2, places=4, msg='incorrect r')
 
     def test_prepare_calculate_dev_r(self):
         deviation = 1.41185
-        self.apEn.prepare_calculate_apen(2, os.path.join(constants.DATA_DIR,'ApEn_amolituda_2.txt'), CalculationType.DEV, 0.5, False, 0)
-        self.assertAlmostEqual(self.apEn.r, deviation * 0.5, places=4, msg='incorrect r')
-        self.apEn.calculate_apen.assert_called_with(m=2)
+        self.apEn.read_series(os.path.join(constants.DATA_DIR,'ApEn_amolituda_2.txt'), False, 0)
+        r = self.apEn.calculate_r(CalculationType.DEV,deviation,0.5, self.apEn.u_list)
+        self.assertAlmostEqual(r, deviation * 0.5, places=4, msg='incorrect r')
 
     def test_prepare_calculate_complex_r(self):
-        self.apEn.prepare_calculate_apen(2, os.path.join(constants.DATA_DIR,'ApEn_amolituda_2.txt'), CalculationType.COMPLEX, 0, False, 0)
-        self.assertAlmostEqual(self.apEn.r, 7.18754, places=4, msg='incorrect r')
+        self.apEn.read_series(os.path.join(constants.DATA_DIR,'ApEn_amolituda_2.txt'), False, 0)
+        deviation = self.apEn.calculate_deviation(self.apEn.u_list)
+        r = self.apEn.calculate_r(CalculationType.COMPLEX,deviation,0.5, self.apEn.u_list)
+        self.assertAlmostEqual(r, 7.18754, places=4, msg='incorrect r')
+
+    def test_prepare_calculate_r(self):
+        self.apEn.calculate_r = MagicMock(return_value=0.28237)
+        self.apEn.prepare_calculate_apen(2, os.path.join(constants.DATA_DIR,'ApEn_amolituda_2.txt'), CalculationType.CONST, 0, False, 0)
+        self.apEn.calculate_r.assert_called_with(CalculationType.CONST, 1.4118572032582122, 0, self.apEn.u_list)
         self.apEn.calculate_apen.assert_called_with(m=2)
+        self.assertAlmostEqual(self.apEn.r, 0.28237, places=4, msg='incorrect r')
 
-
-# @unittest.skip("skipping heavy tests")
 class TestApEnCalculateOverallApEn(unittest.TestCase):
     def setUp(self):
         self.apEn = ApEn(m=2)

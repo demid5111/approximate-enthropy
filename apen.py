@@ -76,21 +76,22 @@ class ApEn:
     def calculate_complex_r(self, sddsDeviation, deviation, len_seq):
         return (-0.036 + 0.26 * (sddsDeviation / deviation) ** (1 / 2)) / ((len_seq / 1000) ** (1 / 4))
 
-    def prepare_calculate_apen(self, m, file_name, calculationType, devCoefValue, useThreshold, thresholdValue):
-        # tmpApEn = ApEn(m=2)
-        self.read_series(file_name, useThreshold, thresholdValue)
-        self.r = self.calculate_deviation(self.u_list)
+    def calculate_r(self, calculation_type, r, dev_coef_value, seq):
+        res_r = 0
+        if calculation_type == CalculationType.CONST:
+            res_r = r * 0.2
+        elif calculation_type == CalculationType.DEV:
+            res_r = r *dev_coef_value
+        elif calculation_type == CalculationType.COMPLEX:
+            sdds_deviation = self.make_sdds(seq)
+            res_r = self.calculate_complex_r(sdds_deviation, r, len(seq))
+        return res_r
 
-        if calculationType == CalculationType.CONST:
-            self.r *= 0.2
-        elif calculationType == CalculationType.DEV:
-            self.r *= devCoefValue
-        elif calculationType == CalculationType.COMPLEX:
-            sdds_deviation = self.make_sdds(self.u_list)
-            self.r = self.calculate_complex_r(sdds_deviation, self.r, len(self.u_list))
-
+    def prepare_calculate_apen(self, m, file_name, calculation_type, dev_coef_value, use_threshold, threshold_value):
+        self.read_series(file_name, use_threshold, threshold_value)
+        deviation = self.calculate_deviation(self.u_list)
+        self.r = self.calculate_r(calculation_type, deviation, dev_coef_value, self.u_list)
         return self.calculate_apen(m=m)
-
 
 def makeReport(fileName="results/results.csv", filesList=None, apEnList=None, rList=None, nList=None):
     if not filesList:
