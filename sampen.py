@@ -33,7 +33,14 @@ class SampEn(ApEn):
         return self.calculate_c(m=m)
 
     def calculate_sampen(self, m):
-        return -log(self.calculate_final(m+1)/self.calculate_final(m))
+        for_m = self.calculate_final(m)
+        if not for_m:
+            return 0
+        for_m_next = self.calculate_final(m+1)
+        if not for_m_next:
+            return 0
+        else:
+            return -log(self.calculate_final(m+1)/self.calculate_final(m))
 
     def prepare_calculate_sampen(self, m, series, calculation_type, dev_coef_value, use_threshold, threshold_value):
         self.read_series(series, use_threshold, threshold_value)

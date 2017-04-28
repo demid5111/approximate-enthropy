@@ -148,14 +148,12 @@ class ApEnWidget(QWidget):
             try:
                 m = int(self.mEdit.text())
                 tmp = SampEn(m=m)
-                thresholdValue = int(thresholdValue)
-                devCoefValue = float(devCoefValue)
                 res = tmp.prepare_calculate_sampen(m=m,
                                                    series=i,
-                                                   calculationType=self.calculateR,
-                                                   devCoefValue=devCoefValue,
+                                                   calculation_type=self.calculateR,
+                                                   dev_coef_value=float(devCoefValue),
                                                    use_threshold=self.isThresholdUsed,
-                                                   threshold_value=thresholdValue)
+                                                   threshold_value=int(thresholdValue))
                 results.append('{0:.10f}'.format(res))
                 filesSuccess.append(i)
                 r.append(tmp.r)

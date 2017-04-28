@@ -19,7 +19,7 @@ class ApEn:
         self.u_list = []
         with open(fileName, "r") as f:
             for val in f.readlines():
-                self.u_list.append(float(val.strip()))
+                self.u_list.append(float(val.strip().replace(',', '.')))
         assert self.u_list, "File is either missed or corrupted"
         if useThreshold:
             assert len(self.u_list) >= thresholdValue, "Sample length is too small. Need more than {}" \
@@ -47,8 +47,11 @@ class ApEn:
             self.c_list.append(similar_vectors / (self.N - m + 1))
 
     def _final(self, m):
-        return sum([log(self.c_list[i]) for i in range(self.N - m + 1)]) \
-               * ((self.N - m + 1) ** (-1))
+        res = []
+        for i in range(self.N - m + 1):
+            tmp = log(self.c_list[i]) if self.c_list[i] else 0.0
+            res.append(tmp)
+        return sum(res) * ((self.N - m + 1) ** (-1))
 
     def calculate_final(self, m):
         # 3. Form a sequence of vectors so that
@@ -71,17 +74,20 @@ class ApEn:
         return (sum([(i - total_sum_norm) ** 2 for i in seq]) / (self.N)) ** (1 / 2)
 
     def make_sdds(self, seq):
-        return self.calculate_deviation([seq[i] - seq[i - 1] for (i,v) in enumerate(seq[1:])])
+        return self.calculate_deviation([seq[i] - seq[i - 1] for (i, v) in enumerate(seq[1:])])
 
     def calculate_complex_r(self, sddsDeviation, deviation, len_seq):
-        return (-0.036 + 0.26 * (sddsDeviation / deviation) ** (1 / 2)) / ((len_seq / 1000) ** (1 / 4))
+        if not deviation:
+            return 0
+        else:
+            return (-0.036 + 0.26 * (sddsDeviation / deviation) ** (1 / 2)) / ((len_seq / 1000) ** (1 / 4))
 
     def calculate_r(self, calculation_type, r, dev_coef_value, seq):
         res_r = 0
         if calculation_type == CalculationType.CONST:
             res_r = r * 0.2
         elif calculation_type == CalculationType.DEV:
-            res_r = r *dev_coef_value
+            res_r = r * dev_coef_value
         elif calculation_type == CalculationType.COMPLEX:
             sdds_deviation = self.make_sdds(seq)
             res_r = self.calculate_complex_r(sdds_deviation, r, len(seq))
@@ -93,15 +99,17 @@ class ApEn:
         self.r = self.calculate_r(calculation_type, deviation, dev_coef_value, self.u_list)
         return self.calculate_apen(m=m)
 
+
 def makeReport(fileName="results/results.csv", filesList=None, apEnList=None, rList=None, nList=None):
     if not filesList:
         print("Error in generating report")
     with open(fileName, "w") as f:
         for index, name in enumerate(filesList):
             if nList:
-                f.write(",".join(['\"' + name + '\"', str(apEnList[index]), str(rList[index]), str(nList[index])]) + '\n')
+                f.write(
+                    ",".join(['"{}"'.format(name), str(apEnList[index]), str(rList[index]), str(nList[index])]) + '\n')
             else:
-                f.write(",".join(['\"' + name + '\"', str(apEnList[index]), str(rList[index])]) + '\n')
+                f.write(",".join(['"{}"'.format(name), str(apEnList[index]), 'error']) + '\n')
 
 
 if __name__ == "__main__":
