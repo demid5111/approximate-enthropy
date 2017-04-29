@@ -108,8 +108,10 @@ def makeReport(fileName="results/results.csv", filesList=None, apEnList=None, rL
             if nList:
                 f.write(
                     ",".join(['"{}"'.format(name), str(apEnList[index]), str(rList[index]), str(nList[index])]) + '\n')
+            elif rList:
+                f.write(",".join(['"{}"'.format(name), str(apEnList[index]), str(rList[index])]) + '\n')
             else:
-                f.write(",".join(['"{}"'.format(name), str(apEnList[index]), 'error']) + '\n')
+                f.write(",".join(['"{}"'.format(name), str(apEnList[index])]) + '\n')
 
 
 if __name__ == "__main__":

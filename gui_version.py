@@ -58,7 +58,7 @@ class ApEnWidget(QWidget):
         fileNamesClean.clicked.connect(self.cleanFileNames)
 
         apEnCalculate = QPushButton("Calculate ApEn", self)
-        apEnCalculate.clicked.connect(self.calculateApEn)
+        apEnCalculate.clicked.connect(self.calculate_apen)
 
         # self.move(300, 150)
         # self.setWindowTitle('Calculator')
@@ -105,16 +105,6 @@ class ApEnWidget(QWidget):
 
         self.tab1.setLayout(self.tab1.layout)
 
-        # Second tab
-        # grid2 = QGridLayout()
-        # self.tab2.layout = grid2
-        #
-        # m2Label = QLabel('m')
-        # self.m2Edit = QLineEdit("2")
-        #
-        # grid2.addWidget(m2Label, 0, 0)
-        # grid2.addWidget(self.m2Edit, 0, 1)
-        #
         sampEnCalculate = QPushButton("Calculate SampEn", self)
         sampEnCalculate.clicked.connect(self.sampEnCalculate)
 
@@ -164,16 +154,15 @@ class ApEnWidget(QWidget):
         dialog.setWindowModality(False)
         dialog.setText("SampEn calculated for: \n {}"
                        .format("".join(["- {}, \n".format(i) for i in filesSuccess])))
-        # information(self,"ApEn","ApEn calculated for " + i);
-        # dialog.setText("MESSAGE")
         dialog.show()
         makeReport(filesList=filesList, apEnList=results, rList=r, nList=n)
 
-    def calculateApEn(self):
+    def calculate_apen(self):
         results = []
         tmp = None
         r = []
-        filesList = self.fileNamesEdit.toPlainText().split('\n')
+        n = []
+        files_list = self.fileNamesEdit.toPlainText().split('\n')
         # 1. decide whether to use threshold or not
         thresholdValue = -1
         devCoefValue = -1
@@ -183,32 +172,29 @@ class ApEnWidget(QWidget):
         if self.calculateR == CalculationType.DEV:
             devCoefValue = self.rDevCoef.text()
         # 3. make all enthropy calculations
-        filesSuccess = []
-        for i in filesList:
+        files_success = []
+        for i in files_list:
             try:
                 m = int(self.mEdit.text())
                 tmp = ApEn(m=m)
-                thresholdValue = int(thresholdValue)
-                devCoefValue = float(devCoefValue)
                 res = tmp.prepare_calculate_apen(m=m,
                                                  file_name=i,
                                                  calculation_type=self.calculateR,
-                                                 dev_coef_value=devCoefValue,
+                                                 dev_coef_value=float(devCoefValue),
                                                  use_threshold=self.isThresholdUsed,
-                                                 threshold_value=thresholdValue)
+                                                 threshold_value=int(thresholdValue))
                 results.append('{0:.10f}'.format(res))
-                filesSuccess.append(i)
+                files_success.append(i)
                 r.append(tmp.r)
+                n.append(tmp.N)
             except ValueError:
                 results.append("Error! For file {}".format(i))
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
         dialog.setText("ApEn calculated for: \n {}"
-                       .format("".join(["- {}, \n".format(i) for i in filesSuccess])))
-        # information(self,"ApEn","ApEn calculated for " + i);
-        # dialog.setText("MESSAGE")
+                       .format("".join(["- {}, \n".format(i) for i in files_success])))
         dialog.show()
-        makeReport(filesList=filesList, apEnList=results, rList=r)
+        makeReport(filesList=files_list, apEnList=results, rList=r, nList=n)
 
     def showFileChooser(self):
         path = ""
