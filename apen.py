@@ -99,20 +99,27 @@ class ApEn:
         self.r = self.calculate_r(calculation_type, deviation, dev_coef_value, self.u_list)
         return self.calculate_apen(m=m)
 
+    def get_average_rr(self, seq):
+        return float(sum(seq)) / len(seq)
 
-def makeReport(fileName="results/results.csv", filesList=None, apEnList=None, rList=None, nList=None):
+
+def makeReport(fileName="results/results.csv", filesList=None, apEnList=None, rList=None, nList=None, avg_rr_list=None,
+               is_ap_en=True):
     if not filesList:
         print("Error in generating report")
     with open(fileName, "w") as f:
+        if is_ap_en:
+            type = 'Approximate Enthropy'
+        else:
+            type = 'Sample Enthropy'
+        f.write(','.join(['File name', type, 'R', 'N', 'Average RR']) + '\n')
         for index, name in enumerate(filesList):
-            if nList:
-                f.write(
-                    ",".join(['"{}"'.format(name), str(apEnList[index]), str(rList[index]), str(nList[index])]) + '\n')
-            elif rList:
-                f.write(",".join(['"{}"'.format(name), str(apEnList[index]), str(rList[index])]) + '\n')
-            else:
-                f.write(",".join(['"{}"'.format(name), str(apEnList[index])]) + '\n')
-
+            res_list = ['"{}"'.format(name),
+                        str(apEnList[index]),
+                        str(rList[index]) if rList else '',
+                        str(nList[index]) if nList else '',
+                        str(avg_rr_list[index]) if avg_rr_list else '']
+            f.write(','.join(res_list) + '\n')
 
 if __name__ == "__main__":
     # 2. Fix m and r

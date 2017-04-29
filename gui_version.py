@@ -123,6 +123,7 @@ class ApEnWidget(QWidget):
         tmp = None
         r = []
         n = []
+        avg_rr = []
         filesList = self.fileNamesEdit.toPlainText().split('\n')
         # 1. decide whether to use threshold or not
         thresholdValue = -1
@@ -148,6 +149,7 @@ class ApEnWidget(QWidget):
                 filesSuccess.append(i)
                 r.append(tmp.r)
                 n.append(tmp.N)
+                avg_rr.append(tmp.get_average_rr(tmp.u_list))
             except ValueError:
                 results.append("Error! For file {}".format(i))
         dialog = QMessageBox(self)
@@ -155,13 +157,14 @@ class ApEnWidget(QWidget):
         dialog.setText("SampEn calculated for: \n {}"
                        .format("".join(["- {}, \n".format(i) for i in filesSuccess])))
         dialog.show()
-        makeReport(filesList=filesList, apEnList=results, rList=r, nList=n)
+        makeReport(filesList=filesList, apEnList=results, rList=r, nList=n, avg_rr_list=avg_rr, is_ap_en=False)
 
     def calculate_apen(self):
         results = []
         tmp = None
         r = []
         n = []
+        avg_rr = []
         files_list = self.fileNamesEdit.toPlainText().split('\n')
         # 1. decide whether to use threshold or not
         thresholdValue = -1
@@ -187,6 +190,7 @@ class ApEnWidget(QWidget):
                 files_success.append(i)
                 r.append(tmp.r)
                 n.append(tmp.N)
+                avg_rr.append(tmp.get_average_rr(tmp.u_list))
             except ValueError:
                 results.append("Error! For file {}".format(i))
         dialog = QMessageBox(self)
@@ -194,7 +198,7 @@ class ApEnWidget(QWidget):
         dialog.setText("ApEn calculated for: \n {}"
                        .format("".join(["- {}, \n".format(i) for i in files_success])))
         dialog.show()
-        makeReport(filesList=files_list, apEnList=results, rList=r, nList=n)
+        makeReport(filesList=files_list, apEnList=results, rList=r, nList=n, avg_rr_list=avg_rr, is_ap_en=True)
 
     def showFileChooser(self):
         path = ""
