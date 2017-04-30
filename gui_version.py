@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
                              QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog, QRadioButton, QButtonGroup,
                              QHBoxLayout, QCheckBox, QBoxLayout, QVBoxLayout, QMessageBox, QMainWindow, QTabWidget)
 
-from apen import ApEn, makeReport
+from apen import ApEn, make_report
 from sampen import SampEn
 from supporting import CalculationType
 
@@ -120,48 +120,6 @@ class ApEnWidget(QWidget):
 
     def sampEnCalculate(self):
         results = []
-        tmp = None
-        r = []
-        n = []
-        avg_rr = []
-        filesList = self.fileNamesEdit.toPlainText().split('\n')
-        # 1. decide whether to use threshold or not
-        thresholdValue = -1
-        devCoefValue = -1
-        if self.isThresholdUsed:
-            thresholdValue = self.rThreshold.text()
-        # 2. choose the way to calculate r
-        if self.calculateR == CalculationType.DEV:
-            devCoefValue = self.rDevCoef.text()
-        # 3. make all enthropy calculations
-        filesSuccess = []
-        for i in filesList:
-            try:
-                m = int(self.mEdit.text())
-                tmp = SampEn(m=m)
-                res = tmp.prepare_calculate_sampen(m=m,
-                                                   series=i,
-                                                   calculation_type=self.calculateR,
-                                                   dev_coef_value=float(devCoefValue),
-                                                   use_threshold=self.isThresholdUsed,
-                                                   threshold_value=int(thresholdValue))
-                results.append('{0:.10f}'.format(res))
-                filesSuccess.append(i)
-                r.append(tmp.r)
-                n.append(tmp.N)
-                avg_rr.append(tmp.get_average_rr(tmp.u_list))
-            except ValueError:
-                results.append("Error! For file {}".format(i))
-        dialog = QMessageBox(self)
-        dialog.setWindowModality(False)
-        dialog.setText("SampEn calculated for: \n {}"
-                       .format("".join(["- {}, \n".format(i) for i in filesSuccess])))
-        dialog.show()
-        makeReport(filesList=filesList, apEnList=results, rList=r, nList=n, avg_rr_list=avg_rr, is_ap_en=False)
-
-    def calculate_apen(self):
-        results = []
-        tmp = None
         r = []
         n = []
         avg_rr = []
@@ -176,29 +134,67 @@ class ApEnWidget(QWidget):
             devCoefValue = self.rDevCoef.text()
         # 3. make all enthropy calculations
         files_success = []
-        for i in files_list:
+        tmp = SampEn()
+        for file_name in files_list:
             try:
-                m = int(self.mEdit.text())
-                tmp = ApEn(m=m)
-                res = tmp.prepare_calculate_apen(m=m,
-                                                 file_name=i,
+                res = tmp.prepare_calculate_sampen(m=int(self.mEdit.text()),
+                                                   series=file_name,
+                                                   calculation_type=self.calculateR,
+                                                   dev_coef_value=float(devCoefValue),
+                                                   use_threshold=self.isThresholdUsed,
+                                                   threshold_value=int(thresholdValue))
+                results.append('{0:.10f}'.format(tmp.get_result_val(res)))
+                files_success.append(file_name)
+                r.append(tmp.get_r_val(res))
+                n.append(tmp.get_n_val(res))
+                avg_rr.append(tmp.get_avg_rr_val(res))
+            except ValueError:
+                results.append("Error! For file {}".format(file_name))
+        dialog = QMessageBox(self)
+        dialog.setWindowModality(False)
+        dialog.setText("SampEn calculated for: \n {}"
+                       .format("".join(["- {}, \n".format(i) for i in files_success])))
+        dialog.show()
+        make_report(files_list=files_list, ap_en_list=results, r_list=r, n_list=n, avg_rr_list=avg_rr, is_ap_en=False)
+
+    def calculate_apen(self):
+        results = []
+        r = []
+        n = []
+        avg_rr = []
+        files_list = self.fileNamesEdit.toPlainText().split('\n')
+        # 1. decide whether to use threshold or not
+        thresholdValue = -1
+        devCoefValue = -1
+        if self.isThresholdUsed:
+            thresholdValue = self.rThreshold.text()
+        # 2. choose the way to calculate r
+        if self.calculateR == CalculationType.DEV:
+            devCoefValue = self.rDevCoef.text()
+        # 3. make all enthropy calculations
+        files_success = []
+        tmp = ApEn()
+        for file_name in files_list:
+            try:
+                res = tmp.prepare_calculate_apen(m=int(self.mEdit.text()),
+                                                 file_name=file_name,
                                                  calculation_type=self.calculateR,
                                                  dev_coef_value=float(devCoefValue),
                                                  use_threshold=self.isThresholdUsed,
                                                  threshold_value=int(thresholdValue))
-                results.append('{0:.10f}'.format(res))
-                files_success.append(i)
-                r.append(tmp.r)
-                n.append(tmp.N)
-                avg_rr.append(tmp.get_average_rr(tmp.u_list))
+                results.append('{0:.10f}'.format(tmp.get_result_val(res)))
+                files_success.append(file_name)
+                r.append(tmp.get_r_val(res))
+                n.append(tmp.get_n_val(res))
+                avg_rr.append(tmp.get_avg_rr_val(res))
             except ValueError:
-                results.append("Error! For file {}".format(i))
+                results.append("Error! For file {}".format(file_name))
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
         dialog.setText("ApEn calculated for: \n {}"
                        .format("".join(["- {}, \n".format(i) for i in files_success])))
         dialog.show()
-        makeReport(filesList=files_list, apEnList=results, rList=r, nList=n, avg_rr_list=avg_rr, is_ap_en=True)
+        make_report(files_list=files_list, ap_en_list=results, r_list=r, n_list=n, avg_rr_list=avg_rr, is_ap_en=True)
 
     def showFileChooser(self):
         path = ""
