@@ -42,6 +42,14 @@ class ApEn:
         return d['n']
 
     @staticmethod
+    def get_step_size_val(d):
+        return d['step_size']
+
+    @staticmethod
+    def get_err_val(d):
+        return d['error']
+
+    @staticmethod
     def get_average_rr(seq):
         return float(sum(seq)) / len(seq)
 
@@ -106,25 +114,37 @@ class ApEn:
             res_r = self.calculate_complex_r(self.make_sdds(seq), r, len(seq))
         return res_r
 
-    def prepare_calculate_apen(self, m, file_name, calculation_type, dev_coef_value, use_threshold, threshold_value):
-        u_list = self.read_series(file_name, use_threshold, threshold_value)
-        deviation = self.calculate_deviation(u_list)
-        r = self.calculate_r(calculation_type, deviation, dev_coef_value, u_list)
+    def prepare_calculate_window_apen(self, m, file_name, calculation_type, dev_coef_value, use_threshold,
+                                      threshold_value, window_size=None, step_size=None):
+
+        seq_list, average_rr_list, r_val_list, window_size, step_size = self.prepare_windows_calculation(m, file_name,
+                                                                                                         calculation_type,
+                                                                                                         dev_coef_value,
+                                                                                                         use_threshold,
+                                                                                                         threshold_value,
+                                                                                                         window_size,
+                                                                                                         step_size)
+        apen_results = [self.calculate_apen(m=m, seq=seq_list[i], r=r_val_list[i]) for i in range(len(seq_list))]
+
         return {
-            'result': self.calculate_apen(m=m, seq=u_list, r=r),
-            'average_rr': self.get_average_rr(seq=u_list),
-            'r': r,
-            'n': len(u_list)
+            'result': apen_results,
+            'average_rr': average_rr_list,
+            'r': r_val_list,
+            'n': window_size,
+            'step_size': step_size,
         }
 
-    def prepare_calculate_window_apen(self, m, file_name, calculation_type, dev_coef_value, use_threshold,
-                                      threshold_value, window_size, step_size):
+    def prepare_windows_calculation(self, m, file_name, calculation_type, dev_coef_value, use_threshold,
+                                    threshold_value, window_size=None, step_size=None):
         # 1. read the file
         u_list = ApEn.read_series(file_name, use_threshold, threshold_value)
-        # 2. r is different for every window
+        if not window_size:
+            window_size = len(u_list)
+            step_size = 1
         assert window_size <= len(u_list), "Window size can't be bigger than the size of the overall sequence"
-        apen_results = []
         r_val_list = []
+        average_rr_list = []
+        seq_list = []
         for current_step in range(floor((len(u_list) - window_size) / step_size) + 1):
             next_max = current_step * step_size + window_size
             if next_max > len(u_list):
@@ -133,40 +153,57 @@ class ApEn:
             deviation = ApEn.calculate_deviation(new_seq)
             r_val = self.calculate_r(calculation_type, deviation, dev_coef_value, new_seq)
             r_val_list.append(r_val)
-            apen_results.append(self.calculate_apen(m=m, seq=new_seq, r=r_val))
+            average_rr_list.append(self.get_average_rr(seq=new_seq))
+            seq_list.append(new_seq)
+        return seq_list, average_rr_list, r_val_list, window_size, step_size
 
-        return apen_results
 
-
-def make_report(file_name="results/results.csv", files_list=None, ap_en_list=None, r_list=None, n_list=None,
-                avg_rr_list=None,
-                is_ap_en=True):
-    if not files_list:
+def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):
+    if not res_dic:
         print("Error in generating report")
     with open(file_name, "w") as f:
-        if is_ap_en:
-            type = 'Approximate Enthropy'
-        else:
-            type = 'Sample Enthropy'
-        f.write(','.join(['File name', type, 'R', 'N', 'Average RR']) + '\n')
-        for index, name in enumerate(files_list):
-            res_list = ['"{}"'.format(name),
-                        str(ap_en_list[index]),
-                        str(r_list[index]) if r_list else '',
-                        str(n_list[index]) if n_list else '',
-                        str(avg_rr_list[index]) if avg_rr_list else '']
-            f.write(','.join(res_list) + '\n')
+        f.write('Entropy type, {}\n'.format('Approximate Entropy' if is_ap_en else 'Sample Entropy'))
+
+        # get sample size of window and step
+        any_key = list(res_dic.keys())[0]
+        f.write('Window size, {}\n'.format(ApEn.get_n_val(res_dic[any_key])))
+        f.write('Step size, {}\n'.format(ApEn.get_step_size_val(res_dic[any_key])))
+
+        f.write(','.join(['File name', 'Window number', 'R', 'Average RR']) + '\n')
+
+        for (file_name, ind_result) in res_dic.items():
+            f.write('{},\n'.format(file_name))
+            try:
+                f.write('{}\n'.format(ApEn.get_err_val(ind_result)))
+                continue
+            except KeyError:
+                pass
+            for (window_index, res_val) in enumerate(ApEn.get_result_val(ind_result)):
+                res_list = ['',  # empty for filename column
+                            str(window_index),
+                            str('{0:.10f}'.format(res_val)),
+                            str(ApEn.get_r_val(ind_result)[window_index]),
+                            str(ApEn.get_avg_rr_val(ind_result)[window_index])]
+                f.write(','.join(res_list) + '\n')
 
 
 if __name__ == "__main__":
     apEn = ApEn()
 
-    r = apEn.prepare_calculate_window_apen(m=2,
-                                           file_name=os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
-                                           calculation_type=CalculationType.CONST,
-                                           dev_coef_value=0.5,
-                                           use_threshold=False,
-                                           threshold_value=0,
-                                           window_size=100,
-                                           step_size=10)
-    print(r)
+    # calculate for multiple windows
+    r3 = apEn.prepare_calculate_window_apen(m=2,
+                                            file_name=os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
+                                            calculation_type=CalculationType.CONST,
+                                            dev_coef_value=0.5,
+                                            use_threshold=False,
+                                            threshold_value=0,
+                                            window_size=100,
+                                            step_size=10)
+    # calculate for single window
+    r1 = apEn.prepare_calculate_window_apen(m=2,
+                                            file_name=os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
+                                            calculation_type=CalculationType.CONST,
+                                            dev_coef_value=0.5,
+                                            use_threshold=False,
+                                            threshold_value=0)
+    print(r1)

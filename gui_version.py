@@ -21,12 +21,19 @@ class ApEnWidget(QWidget):
 
         rLabel = QLabel("r")
         number_group = QVBoxLayout()  # Number group
-        #
+
         cb = QCheckBox('Use threshold', self)
         cb.setChecked(True)
-        cb.clicked.connect(self.toogleThresholdCheckbox)
+        cb.clicked.connect(self.toggle_threshold_checkbox)
         self.rThreshold = QLineEdit("300")
-        self.isThresholdUsed = True
+        self.is_threshold_used = True
+
+        window_cb = QCheckBox('Use windows', self)
+        window_cb.setChecked(True)
+        window_cb.clicked.connect(self.toggle_window_checkbox)
+        self.window_size_edit = QLineEdit("100")
+        self.window_step_edit = QLineEdit("10")
+        self.is_windows_enabled = True
 
         self.calculateR = CalculationType.CONST
         self.rConst = QRadioButton("r=0.2*SDNN")
@@ -35,15 +42,14 @@ class ApEnWidget(QWidget):
         number_group.addWidget(self.rConst)
         # self.rDev = QRadioButton("r=Rmax")
 
-        devCoefGroup = QHBoxLayout()
-
+        dev_coef_group = QHBoxLayout()
         self.rDev = QRadioButton('r = SDNN * ', self)
         self.rDev.clicked.connect(self.setDevR)
         self.rDevCoef = QLineEdit("0.5")
         self.rDevCoef.setEnabled(False)
-        devCoefGroup.addWidget(self.rDev)
-        devCoefGroup.addWidget(self.rDevCoef)
-        number_group.addLayout(devCoefGroup)
+        dev_coef_group.addWidget(self.rDev)
+        dev_coef_group.addWidget(self.rDevCoef)
+        number_group.addLayout(dev_coef_group)
 
         self.rComplex = QRadioButton("r=Rchon")
         self.rComplex.clicked.connect(self.setComplexR)
@@ -55,14 +61,10 @@ class ApEnWidget(QWidget):
         fileNamesOpen.clicked.connect(self.showFileChooser)
 
         fileNamesClean = QPushButton("Clean files", self)
-        fileNamesClean.clicked.connect(self.cleanFileNames)
+        fileNamesClean.clicked.connect(self.clean_file_names)
 
         apEnCalculate = QPushButton("Calculate ApEn", self)
         apEnCalculate.clicked.connect(self.calculate_apen)
-
-        # self.move(300, 150)
-        # self.setWindowTitle('Calculator')
-        # self.show()
 
         self.layout = QVBoxLayout(self)
 
@@ -73,8 +75,7 @@ class ApEnWidget(QWidget):
         self.tabs.resize(300, 200)
 
         # Add tabs
-        self.tabs.addTab(self.tab1, "Enthropy")
-        # self.tabs.addTab(self.tab2, "SampEn")
+        self.tabs.addTab(self.tab1, "Entropy")
 
         # Create first tab
 
@@ -87,114 +88,84 @@ class ApEnWidget(QWidget):
         grid.addWidget(cb, 1, 0)
         grid.addWidget(self.rThreshold, 1, 1)
 
-        grid.addWidget(rLabel, 2, 0)
-        grid.addLayout(number_group, 2, 1)
+        grid.addWidget(window_cb, 2, 0)
+        grid.addWidget(self.window_size_edit, 2, 1)
+        grid.addWidget(self.window_step_edit, 3, 1)
 
-        grid.addWidget(fileNamesLabel, 3, 0)
-        grid.addWidget(self.fileNamesEdit, 3, 1)
+        grid.addWidget(rLabel, 4, 0)
+        grid.addLayout(number_group, 4, 1)
 
-        fileButtonsGroup = QVBoxLayout()
-        fileButtonsGroup.addWidget(fileNamesOpen)
-        fileButtonsGroup.addWidget(fileNamesClean)
+        grid.addWidget(fileNamesLabel, 5, 0)
+        grid.addWidget(self.fileNamesEdit, 5, 1)
 
-        grid.addLayout(fileButtonsGroup, 3, 2)
-        # grid.addWidget(fileNamesOpen, 3, 2)
-        # grid.addWidget(fileNamesClean, 3, 3)
+        file_buttons_group = QVBoxLayout()
+        file_buttons_group.addWidget(fileNamesOpen)
+        file_buttons_group.addWidget(fileNamesClean)
 
-        grid.addWidget(apEnCalculate, 4, 1, 3, 1)
+        grid.addLayout(file_buttons_group, 5, 2)
+
+        grid.addWidget(apEnCalculate, 6, 1, 3, 1)
 
         self.tab1.setLayout(self.tab1.layout)
 
-        sampEnCalculate = QPushButton("Calculate SampEn", self)
-        sampEnCalculate.clicked.connect(self.sampEnCalculate)
+        samp_en_calculate = QPushButton("Calculate SampEn", self)
+        samp_en_calculate.clicked.connect(self.calculate_sampen)
 
-        grid.addWidget(sampEnCalculate, 7, 1, 3, 1)
+        grid.addWidget(samp_en_calculate, 9, 1, 3, 1)
         # self.tab2.setLayout(self.tab2.layout)
 
         # Add tabs to widget
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
-    def cleanFileNames(self):
+    def clean_file_names(self):
         self.fileNamesEdit.clear()
 
-    def sampEnCalculate(self):
-        results = []
-        r = []
-        n = []
-        avg_rr = []
-        files_list = self.fileNamesEdit.toPlainText().split('\n')
-        # 1. decide whether to use threshold or not
-        thresholdValue = -1
-        devCoefValue = -1
-        if self.isThresholdUsed:
-            thresholdValue = self.rThreshold.text()
-        # 2. choose the way to calculate r
-        if self.calculateR == CalculationType.DEV:
-            devCoefValue = self.rDevCoef.text()
-        # 3. make all enthropy calculations
-        files_success = []
+    def calculate_sampen(self):
+        files_list, threshold_value, dev_coef_value, window_size, step_size = self.get_parameters()
+        res_dic = {}
         tmp = SampEn()
         for file_name in files_list:
             try:
-                res = tmp.prepare_calculate_sampen(m=int(self.mEdit.text()),
-                                                   series=file_name,
-                                                   calculation_type=self.calculateR,
-                                                   dev_coef_value=float(devCoefValue),
-                                                   use_threshold=self.isThresholdUsed,
-                                                   threshold_value=int(thresholdValue))
-                results.append('{0:.10f}'.format(tmp.get_result_val(res)))
-                files_success.append(file_name)
-                r.append(tmp.get_r_val(res))
-                n.append(tmp.get_n_val(res))
-                avg_rr.append(tmp.get_avg_rr_val(res))
+                res = tmp.prepare_calculate_window_sampen(m=int(self.mEdit.text()),
+                                                          file_name=file_name,
+                                                          calculation_type=self.calculateR,
+                                                          dev_coef_value=dev_coef_value,
+                                                          use_threshold=self.is_threshold_used,
+                                                          threshold_value=threshold_value,
+                                                          window_size=window_size,
+                                                          step_size=step_size)
+                res_dic[file_name] = res
             except ValueError:
-                results.append("Error! For file {}".format(file_name))
+                res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
-        dialog.setText("SampEn calculated for: \n {}"
-                       .format("".join(["- {}, \n".format(i) for i in files_success])))
+        dialog.setText("SampEn calculated for: \n {}".format("".join(["- {}, \n".format(i) for i in res_dic.keys()])))
         dialog.show()
-        make_report(files_list=files_list, ap_en_list=results, r_list=r, n_list=n, avg_rr_list=avg_rr, is_ap_en=False)
+        make_report(res_dic=res_dic, is_ap_en=False)
 
     def calculate_apen(self):
-        results = []
-        r = []
-        n = []
-        avg_rr = []
-        files_list = self.fileNamesEdit.toPlainText().split('\n')
-        # 1. decide whether to use threshold or not
-        thresholdValue = -1
-        devCoefValue = -1
-        if self.isThresholdUsed:
-            thresholdValue = self.rThreshold.text()
-        # 2. choose the way to calculate r
-        if self.calculateR == CalculationType.DEV:
-            devCoefValue = self.rDevCoef.text()
-        # 3. make all enthropy calculations
-        files_success = []
+        files_list, threshold_value, dev_coef_value, window_size, step_size = self.get_parameters()
+        res_dic = {}
         tmp = ApEn()
         for file_name in files_list:
             try:
-                res = tmp.prepare_calculate_apen(m=int(self.mEdit.text()),
-                                                 file_name=file_name,
-                                                 calculation_type=self.calculateR,
-                                                 dev_coef_value=float(devCoefValue),
-                                                 use_threshold=self.isThresholdUsed,
-                                                 threshold_value=int(thresholdValue))
-                results.append('{0:.10f}'.format(tmp.get_result_val(res)))
-                files_success.append(file_name)
-                r.append(tmp.get_r_val(res))
-                n.append(tmp.get_n_val(res))
-                avg_rr.append(tmp.get_avg_rr_val(res))
+                res = tmp.prepare_calculate_window_apen(m=int(self.mEdit.text()),
+                                                        file_name=file_name,
+                                                        calculation_type=self.calculateR,
+                                                        dev_coef_value=dev_coef_value,
+                                                        use_threshold=self.is_threshold_used,
+                                                        threshold_value=threshold_value,
+                                                        window_size=window_size,
+                                                        step_size=step_size)
+                res_dic[file_name] = res
             except ValueError:
-                results.append("Error! For file {}".format(file_name))
+                res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
-        dialog.setText("ApEn calculated for: \n {}"
-                       .format("".join(["- {}, \n".format(i) for i in files_success])))
+        dialog.setText("ApEn calculated for: \n {}".format("".join(["- {}, \n".format(i) for i in res_dic.keys()])))
         dialog.show()
-        make_report(files_list=files_list, ap_en_list=results, r_list=r, n_list=n, avg_rr_list=avg_rr, is_ap_en=True)
+        make_report(res_dic=res_dic, is_ap_en=True)
 
     def showFileChooser(self):
         path = ""
@@ -203,7 +174,7 @@ class ApEnWidget(QWidget):
                 path = f.readline().strip()
         except FileNotFoundError:
             pass
-        fname = QFileDialog.getOpenFileNames(self, 'Open file', path, ("DAT (*.dat, *.txt)"))
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', path, "DAT (*.dat, *.txt)")
         self.fileNamesEdit.setText("")
         print(fname)
         for name in fname[0]:
@@ -217,9 +188,14 @@ class ApEnWidget(QWidget):
         with open(self.fileName, "w") as f:
             f.write(path + '/')
 
-    def toogleThresholdCheckbox(self):
-        self.isThresholdUsed = not self.isThresholdUsed
-        self.rThreshold.setEnabled(self.isThresholdUsed)
+    def toggle_threshold_checkbox(self):
+        self.is_threshold_used = not self.is_threshold_used
+        self.rThreshold.setEnabled(self.is_threshold_used)
+
+    def toggle_window_checkbox(self):
+        self.is_windows_enabled = not self.is_windows_enabled
+        self.window_size_edit.setEnabled(self.is_windows_enabled)
+        self.window_step_edit.setEnabled(self.is_windows_enabled)
 
     def setComplexR(self):
         self.calculateR = CalculationType.COMPLEX
@@ -232,6 +208,14 @@ class ApEnWidget(QWidget):
     def setDevR(self):
         self.calculateR = CalculationType.DEV
         self.rDevCoef.setEnabled(True)
+
+    def get_parameters(self):
+        files_list = self.fileNamesEdit.toPlainText().split('\n')
+        threshold_value = int(self.rThreshold.text()) if self.is_threshold_used else -1
+        dev_coef_value = float(self.rDevCoef.text()) if self.calculateR == CalculationType.DEV else -1
+        window_size = int(self.window_size_edit.text()) if self.is_windows_enabled else 0
+        step_size = int(self.window_step_edit.text()) if self.is_windows_enabled else 0
+        return files_list, threshold_value, dev_coef_value, window_size, step_size
 
 
 class App(QMainWindow):
