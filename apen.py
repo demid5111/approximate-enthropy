@@ -169,7 +169,7 @@ def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):
         f.write('Window size, {}\n'.format(ApEn.get_n_val(res_dic[any_key])))
         f.write('Step size, {}\n'.format(ApEn.get_step_size_val(res_dic[any_key])))
 
-        f.write(','.join(['File name', 'Window number', 'R', 'Average RR']) + '\n')
+        f.write(','.join(['File name', 'Window number', 'Entropy', 'R', 'Average RR']) + '\n')
 
         for (file_name, ind_result) in res_dic.items():
             f.write('{},\n'.format(file_name))
