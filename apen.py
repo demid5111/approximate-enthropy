@@ -172,14 +172,14 @@ def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):
         f.write(','.join(['File name', 'Window number', 'Entropy', 'R', 'Average RR']) + '\n')
 
         for (file_name, ind_result) in res_dic.items():
-            f.write('{},\n'.format(file_name))
             try:
-                f.write('{}\n'.format(ApEn.get_err_val(ind_result)))
+                ApEn.get_err_val(ind_result)
+                f.write(','.join([file_name, ApEn.get_err_val(ind_result)]) + '\n')
                 continue
             except KeyError:
                 pass
             for (window_index, res_val) in enumerate(ApEn.get_result_val(ind_result)):
-                res_list = ['',  # empty for filename column
+                res_list = ['{}'.format(file_name),  # empty for filename column
                             str(window_index),
                             str('{0:.10f}'.format(res_val)),
                             str(ApEn.get_r_val(ind_result)[window_index]),
