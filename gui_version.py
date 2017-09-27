@@ -1,13 +1,111 @@
 import os
 import sys
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
-                             QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog, QRadioButton, QButtonGroup,
-                             QHBoxLayout, QCheckBox, QBoxLayout, QVBoxLayout, QMessageBox, QMainWindow, QTabWidget)
+                             QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog, QRadioButton,
+                             QHBoxLayout, QCheckBox, QVBoxLayout, QMessageBox, QMainWindow, QTabWidget)
 
 from apen import ApEn, make_report
 from cordim import CorDim
 from sampen import SampEn
 from supporting import CalculationType
+
+
+class EntropyWidget(QWidget):
+    def __init__(self, parent):
+        super(QWidget, self).__init__(parent)
+        self.init_ui()
+
+    def config_r_enth_group(self):
+        number_group = QVBoxLayout()  # Number group
+        self.calculateR = CalculationType.CONST
+        self.rConst = QRadioButton("r=0.2*SDNN")
+        self.rConst.setChecked(True)
+        self.rConst.clicked.connect(self.set_const_r)
+        number_group.addWidget(self.rConst)
+        # self.rDev = QRadioButton("r=Rmax")
+
+        dev_coef_group = QHBoxLayout()
+        self.rDev = QRadioButton('r = SDNN * ', self)
+        self.rDev.clicked.connect(self.set_dev_r)
+        self.rDevCoef = QLineEdit("0.5")
+        self.rDevCoef.setEnabled(False)
+        dev_coef_group.addWidget(self.rDev)
+        dev_coef_group.addWidget(self.rDevCoef)
+        number_group.addLayout(dev_coef_group)
+
+        self.rComplex = QRadioButton("r=Rchon")
+        self.rComplex.clicked.connect(self.set_complex_r)
+        number_group.addWidget(self.rComplex)
+
+        return number_group
+
+    def init_ui(self):
+        cb = QCheckBox('Use threshold', self)
+        cb.setChecked(True)
+        self.is_threshold_used = True
+        cb.clicked.connect(self.toggle_threshold_checkbox)
+        self.rThreshold = QLineEdit("300")
+
+        window_cb = QCheckBox('Use windows', self)
+        window_cb.setChecked(True)
+        window_cb.clicked.connect(self.toggle_window_checkbox)
+        self.window_size_edit = QLineEdit("100")
+        self.window_step_edit = QLineEdit("10")
+        self.is_windows_enabled = True
+
+        rLabel = QLabel("r")
+        number_group = self.config_r_enth_group()
+
+        grid = QGridLayout()
+        grid.addWidget(cb, 0, 0)
+        grid.addWidget(self.rThreshold, 0, 1)
+        grid.addWidget(window_cb, 1, 0)
+        grid.addWidget(self.window_size_edit, 1, 1)
+        grid.addWidget(self.window_step_edit, 2, 1)
+        grid.addWidget(rLabel, 3, 0)
+        grid.addLayout(number_group, 3, 1)
+        self.setLayout(grid)
+
+    def set_complex_r(self):
+        self.calculateR = CalculationType.COMPLEX
+        self.rDevCoef.setEnabled(False)
+
+    def set_const_r(self):
+        self.calculateR = CalculationType.CONST
+        self.rDevCoef.setEnabled(False)
+
+    def set_dev_r(self):
+        self.calculateR = CalculationType.DEV
+        self.rDevCoef.setEnabled(True)
+
+    def toggle_threshold_checkbox(self):
+        self.is_threshold_used = not self.is_threshold_used
+        self.rThreshold.setEnabled(self.is_threshold_used)
+
+    def toggle_window_checkbox(self):
+        self.is_windows_enabled = not self.is_windows_enabled
+        self.window_size_edit.setEnabled(self.is_windows_enabled)
+        self.window_step_edit.setEnabled(self.is_windows_enabled)
+
+
+class CorDimWidget(QWidget):
+    def __init__(self, parent):
+        super(QWidget, self).__init__(parent)
+        self.init_ui()
+
+    def init_ui(self):
+        cor_dim_radius_label = QLabel("radius")
+        self.cor_dim_radius = QLineEdit("0.99")
+
+        # cor_dim_calculate = QPushButton("Calculate CorDim", self)
+        # cor_dim_calculate.clicked.connect(self.calculate_cor_dim)
+
+        grid = QGridLayout()
+        grid.addWidget(cor_dim_radius_label, 0, 0)
+        grid.addWidget(self.cor_dim_radius, 0, 1)
+        # grid.addWidget(cor_dim_calculate, 1, 1, 3, 1)
+
+        self.setLayout(grid)
 
 
 class ApEnWidget(QWidget):
@@ -23,17 +121,17 @@ class ApEnWidget(QWidget):
         self.tabs = QTabWidget()
         self.tab1 = QWidget()
         self.tab2 = QWidget()
-        self.tabs.resize(300, 200)
+        self.tabs.resize(500, 600)
 
         # Add tabs
         self.tabs.addTab(self.tab1, "Entropy")
-        self.tabs.addTab(self.tab2, "CorDim")
+        # self.tabs.addTab(self.tab2, "CorDim")
 
         # Create first tab
-        enth_grid = self.config_enthropy_tab()
-        cor_dim_grid = self.config_cordim_tab()
+        enth_grid = self.config_entropy_tab()
+
         self.tab1.setLayout(enth_grid)
-        self.tab2.setLayout(cor_dim_grid)
+        # self.tab2.setLayout(cor_dim_grid)
 
         # Add tabs to widget
         layout.addWidget(self.tabs)
@@ -60,41 +158,12 @@ class ApEnWidget(QWidget):
 
         return file_chooser_group
 
-    def config_r_enth_group(self):
-        number_group = QVBoxLayout()  # Number group
-        self.calculateR = CalculationType.CONST
-        self.rConst = QRadioButton("r=0.2*SDNN")
-        self.rConst.setChecked(True)
-        self.rConst.clicked.connect(self.setConstR)
-        number_group.addWidget(self.rConst)
-        # self.rDev = QRadioButton("r=Rmax")
-
-        dev_coef_group = QHBoxLayout()
-        self.rDev = QRadioButton('r = SDNN * ', self)
-        self.rDev.clicked.connect(self.setDevR)
-        self.rDevCoef = QLineEdit("0.5")
-        self.rDevCoef.setEnabled(False)
-        dev_coef_group.addWidget(self.rDev)
-        dev_coef_group.addWidget(self.rDevCoef)
-        number_group.addLayout(dev_coef_group)
-
-        self.rComplex = QRadioButton("r=Rchon")
-        self.rComplex.clicked.connect(self.setComplexR)
-        number_group.addWidget(self.rComplex)
-
-        return number_group
-
-    def config_enthropy_tab(self):
-        mLabel = QLabel('m')
-        self.mEdit = QLineEdit("2")
-
-        rLabel = QLabel("r")
-
+    def config_ent_settings_grid(self):
         cb = QCheckBox('Use threshold', self)
         cb.setChecked(True)
+        self.is_threshold_used = True
         cb.clicked.connect(self.toggle_threshold_checkbox)
         self.rThreshold = QLineEdit("300")
-        self.is_threshold_used = True
 
         window_cb = QCheckBox('Use windows', self)
         window_cb.setChecked(True)
@@ -103,58 +172,82 @@ class ApEnWidget(QWidget):
         self.window_step_edit = QLineEdit("10")
         self.is_windows_enabled = True
 
-        number_group = self.config_r_enth_group()
+        rLabel = QLabel("r")
+        # number_group = self.config_r_enth_group()
 
-        file_chooser_group = self.config_filechooser_group()
+        grid = QGridLayout()
+        grid.addWidget(cb, 0, 0)
+        grid.addWidget(self.rThreshold, 0, 1)
+        grid.addWidget(window_cb, 1, 0)
+        grid.addWidget(self.window_size_edit, 1, 1)
+        grid.addWidget(self.window_step_edit, 2, 1)
+        grid.addWidget(rLabel, 3, 0)
+        # grid.addLayout(number_group, 3, 1)
 
-        apen_calculate = QPushButton("Calculate ApEn", self)
-        apen_calculate.clicked.connect(self.calculate_apen)
+        return grid
 
-        samp_en_calculate = QPushButton("Calculate SampEn", self)
-        samp_en_calculate.clicked.connect(self.calculate_sampen)
+    def config_entropy_tab(self):
+        mLabel = QLabel('m')
+        self.mEdit = QLineEdit("2")
+
+        self.is_use_ent_cb = QCheckBox('Calculate entropy?', self)
+        self.is_use_ent_cb.setChecked(True)
+        self.is_calc_ent = True
+        self.is_use_ent_cb.clicked.connect(self.toggle_calc_ent_cb)
+
+        self.ent_widget = EntropyWidget(self)
+
+        self.is_use_cor_dim_cb = QCheckBox('Calculate cor dim?', self)
+        self.is_use_cor_dim_cb.setChecked(True)
+        self.is_calc_cor_dim = True
+        self.is_use_cor_dim_cb.clicked.connect(self.toggle_calc_cor_dim_cb)
+
+        self.cor_dim_widget = CorDimWidget(self)
+
+        self.run_calculate = QPushButton("Run calculation", self)
+        self.run_calculate.clicked.connect(self.calculate)
+
+        # samp_en_calculate = QPushButton("Calculate SampEn", self)
+        # samp_en_calculate.clicked.connect(self.calculate_sampen)
 
         grid = QGridLayout()
         grid.addWidget(mLabel, 0, 0)
         grid.addWidget(self.mEdit, 0, 1)
-        grid.addWidget(cb, 1, 0)
-        grid.addWidget(self.rThreshold, 1, 1)
-        grid.addWidget(window_cb, 2, 0)
-        grid.addWidget(self.window_size_edit, 2, 1)
-        grid.addWidget(self.window_step_edit, 3, 1)
-        grid.addWidget(rLabel, 4, 0)
-        grid.addLayout(number_group, 4, 1)
-        grid.addLayout(file_chooser_group, 5, 0, 1, 3)  # spanning it over 3 columns, keeping one row
-        grid.addWidget(apen_calculate, 6, 1, 3, 1)
-        grid.addWidget(samp_en_calculate, 9, 1, 3, 1)
+        grid.addWidget(self.is_use_ent_cb, 1, 1)
+        grid.addWidget(self.ent_widget, 2, 1)
+        grid.addWidget(self.is_use_cor_dim_cb, 3, 1)
+        grid.addWidget(self.cor_dim_widget, 4, 1)
+        # grid.addLayout(file_chooser_group, 5, 0, 1, 3)  # spanning it over 3 columns, keeping one row
+        grid.addWidget(self.run_calculate, 8, 1, 3, 1)
+        # grid.addWidget(samp_en_calculate, 10, 1, 3, 1)
+
+        # cor_dim_grid = self.config_cordim_grid()
+        file_chooser_group = self.config_filechooser_group()
+
+        grid.addLayout(file_chooser_group, 5, 0, 1, 3)
+        # grid.addLayout(cor_dim_grid, 15, 0, 1, 3)
 
         return grid
 
-    def config_cordim_tab(self):
-        cor_dim_dimension_label = QLabel('Dimension')
-        self.cor_dim_dimension = QLineEdit("2")
-
+    def config_cordim_grid(self):
         cor_dim_radius_label = QLabel("radius")
         self.cor_dim_radius = QLineEdit("0.99")
-
-        file_chooser_group = self.config_filechooser_group()
 
         cor_dim_calculate = QPushButton("Calculate CorDim", self)
         cor_dim_calculate.clicked.connect(self.calculate_cor_dim)
 
         grid = QGridLayout()
-        grid.addWidget(cor_dim_dimension_label, 0, 0)
-        grid.addWidget(self.cor_dim_dimension, 0, 1)
-        grid.addWidget(cor_dim_radius_label, 1, 0)
-        grid.addWidget(self.cor_dim_radius, 1, 1)
-        grid.addWidget(QLabel(''), 2, 0, 3, 3)
-        grid.addLayout(file_chooser_group, 5, 0, 1, 3)  # spanning it over 3 columns, keeping one row
-        grid.addWidget(QLabel(''), 8, 0, 1, 3)
-        grid.addWidget(cor_dim_calculate, 10, 1, 3, 1)
+        grid.addWidget(cor_dim_radius_label, 0, 0)
+        grid.addWidget(self.cor_dim_radius, 0, 1)
+        grid.addWidget(cor_dim_calculate, 1, 1, 3, 1)
 
         return grid
 
     def clean_file_names(self):
         self.fileNamesEdit.clear()
+
+    def calculate(self):
+        pass
 
     def calculate_sampen(self):
         files_list, threshold_value, dev_coef_value, window_size, step_size = self.get_entropy_parameters()
@@ -216,7 +309,7 @@ class ApEnWidget(QWidget):
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
         dialog.setText(
-            "{} calculated for: \n {}".format(source, "".join(["- {}, \n".format(i) for i in res_dic.keys()])))
+                "{} calculated for: \n {}".format(source, "".join(["- {}, \n".format(i) for i in res_dic.keys()])))
         dialog.show()
 
     def show_file_chooser(self):
@@ -240,26 +333,18 @@ class ApEnWidget(QWidget):
         with open(self.fileName, "w") as f:
             f.write(path + '/')
 
-    def toggle_threshold_checkbox(self):
-        self.is_threshold_used = not self.is_threshold_used
-        self.rThreshold.setEnabled(self.is_threshold_used)
+    def toggle_calc_ent_cb(self):
+        self.is_calc_ent = not self.is_calc_ent
+        self.check_run_button_state()
+        self.ent_widget.setHidden(not self.is_calc_ent)
 
-    def toggle_window_checkbox(self):
-        self.is_windows_enabled = not self.is_windows_enabled
-        self.window_size_edit.setEnabled(self.is_windows_enabled)
-        self.window_step_edit.setEnabled(self.is_windows_enabled)
+    def check_run_button_state(self):
+        self.run_calculate.setEnabled(self.is_calc_ent or self.is_calc_cor_dim)
 
-    def setComplexR(self):
-        self.calculateR = CalculationType.COMPLEX
-        self.rDevCoef.setEnabled(False)
-
-    def setConstR(self):
-        self.calculateR = CalculationType.CONST
-        self.rDevCoef.setEnabled(False)
-
-    def setDevR(self):
-        self.calculateR = CalculationType.DEV
-        self.rDevCoef.setEnabled(True)
+    def toggle_calc_cor_dim_cb(self):
+        self.is_calc_cor_dim = not self.is_calc_cor_dim
+        self.check_run_button_state()
+        self.cor_dim_widget.setHidden(not self.is_calc_cor_dim)
 
     def get_entropy_parameters(self):
         files_list = self.fileNamesEdit.toPlainText().split('\n')
@@ -282,8 +367,8 @@ class App(QMainWindow):
         self.title = 'HeartAlgo-Analyzer'
         self.left = 400
         self.top = 200
-        self.width = 300
-        self.height = 200
+        self.width = 400
+        self.height = 500
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
