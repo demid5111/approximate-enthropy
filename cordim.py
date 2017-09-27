@@ -14,11 +14,14 @@ class CorDim(ApEn):
         for i in seq:
             for j in seq:
                 res.append(CorDim.calc_heviside(radius, ApEn.calculate_distance(i, j)))
-        return (1/(len(seq)**2)) * sum(res)
+        coef = 1/(len(seq)**2) if len(seq) > 0 else 1
+        return coef * sum(res)
 
     @staticmethod
     def calc_attractor(cor_func_res, radius):
-        return log(cor_func_res) / log(radius)
+        cor_val = log(cor_func_res) if cor_func_res != 0 else 1
+        radius_val = log(radius) if radius != 0 and radius != 1 else 1
+        return cor_val / radius_val
 
 
 if __name__ == '__main__':
