@@ -15,3 +15,11 @@ class CorDimWidget(QWidget):
         grid.addWidget(self.cor_dim_radius, 0, 1)
 
         self.setLayout(grid)
+
+    def get_radius(self):
+        res = -1
+        try:
+            res = float(self.cor_dim_radius.text())
+        except:
+            pass
+        return res

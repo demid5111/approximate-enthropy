@@ -28,13 +28,11 @@ class ApEnWidget(QWidget):
 
         # Add tabs
         self.tabs.addTab(self.tab1, "Entropy")
-        # self.tabs.addTab(self.tab2, "CorDim")
 
         # Create first tab
         enth_grid = self.config_entropy_tab()
 
         self.tab1.setLayout(enth_grid)
-        # self.tab2.setLayout(cor_dim_grid)
 
         # Add tabs to widget
         layout.addWidget(self.tabs)
@@ -76,7 +74,6 @@ class ApEnWidget(QWidget):
         self.is_windows_enabled = True
 
         rLabel = QLabel("r")
-        # number_group = self.config_r_enth_group()
 
         grid = QGridLayout()
         grid.addWidget(cb, 0, 0)
@@ -85,7 +82,6 @@ class ApEnWidget(QWidget):
         grid.addWidget(self.window_size_edit, 1, 1)
         grid.addWidget(self.window_step_edit, 2, 1)
         grid.addWidget(rLabel, 3, 0)
-        # grid.addLayout(number_group, 3, 1)
 
         return grid
 
@@ -110,9 +106,6 @@ class ApEnWidget(QWidget):
         self.run_calculate = QPushButton("Run calculation", self)
         self.run_calculate.clicked.connect(self.calculate)
 
-        # samp_en_calculate = QPushButton("Calculate SampEn", self)
-        # samp_en_calculate.clicked.connect(self.calculate_sampen)
-
         grid = QGridLayout()
         grid.addWidget(mLabel, 0, 0)
         grid.addWidget(self.mEdit, 0, 1)
@@ -120,15 +113,10 @@ class ApEnWidget(QWidget):
         grid.addWidget(self.ent_widget, 2, 1)
         grid.addWidget(self.is_use_cor_dim_cb, 3, 1)
         grid.addWidget(self.cor_dim_widget, 4, 1)
-        # grid.addLayout(file_chooser_group, 5, 0, 1, 3)  # spanning it over 3 columns, keeping one row
         grid.addWidget(self.run_calculate, 8, 1, 3, 1)
-        # grid.addWidget(samp_en_calculate, 10, 1, 3, 1)
 
-        # cor_dim_grid = self.config_cordim_grid()
         file_chooser_group = self.config_filechooser_group()
-
         grid.addLayout(file_chooser_group, 5, 0, 1, 3)
-        # grid.addLayout(cor_dim_grid, 15, 0, 1, 3)
 
         return grid
 
@@ -148,65 +136,73 @@ class ApEnWidget(QWidget):
 
     def clean_file_names(self):
         self.fileNamesEdit.clear()
+        self.check_run_button_state()
 
     def calculate(self):
-        pass
+        is_ent_enabled = self.is_use_ent_cb
+        is_cord_dim_enabled = self.is_use_cor_dim_cb
 
-    def calculate_sampen(self):
-        files_list, threshold_value, dev_coef_value, window_size, step_size = self.get_entropy_parameters()
-        res_dic = {}
-        tmp = SampEn()
-        for file_name in files_list:
-            try:
-                res = tmp.prepare_calculate_window_sampen(m=int(self.mEdit.text()),
-                                                          file_name=file_name,
-                                                          calculation_type=self.calculateR,
-                                                          dev_coef_value=dev_coef_value,
-                                                          use_threshold=self.is_threshold_used,
-                                                          threshold_value=threshold_value,
-                                                          window_size=window_size,
-                                                          step_size=step_size)
-                res_dic[file_name] = res
-            except ValueError:
-                res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
+        files_list = self.get_file_names()
+        dimension = int(self.mEdit.text())
 
-        self.show_message('SampEn', res_dic)
-        make_report(res_dic=res_dic, is_ap_en=False)
+        if is_cord_dim_enabled:
+            radius = self.cor_dim_widget.get_radius()
+            res_dic = {}
+            tmp = CorDim()
+            for file_name in files_list:
+                try:
+                    res = tmp.calculate_cor_dim(file_name, dimension, radius)
+                    res_dic[file_name] = res
+                except ValueError:
+                    res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
 
-    def calculate_apen(self):
-        files_list, threshold_value, dev_coef_value, window_size, step_size = self.get_entropy_parameters()
-        res_dic = {}
-        tmp = ApEn()
-        for file_name in files_list:
-            try:
-                res = tmp.prepare_calculate_window_apen(m=int(self.mEdit.text()),
-                                                        file_name=file_name,
-                                                        calculation_type=self.calculateR,
-                                                        dev_coef_value=dev_coef_value,
-                                                        use_threshold=self.is_threshold_used,
-                                                        threshold_value=threshold_value,
-                                                        window_size=window_size,
-                                                        step_size=step_size)
-                res_dic[file_name] = res
-            except ValueError:
-                res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
-        self.show_message('ApEn', res_dic)
-        make_report(res_dic=res_dic, is_ap_en=True)
+            self.show_message('CorDim', res_dic)
+            make_report(res_dic=res_dic, is_ap_en=False)
 
-    def calculate_cor_dim(self):
-        files_list, dimension, radius = self.get_cor_dim_parameters()
-        res_dic = {}
-        tmp = CorDim()
-        for file_name in files_list:
-            try:
-                res = tmp.calculate_cor_dim(file_name=file_name,
-                                            dimension=dimension,
-                                            radius=radius)
-                res_dic[file_name] = res
-            except ValueError:
-                res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
-        self.show_message('CorDim', res_dic)
-        make_report(res_dic=res_dic, is_ap_en=True)
+        if is_ent_enabled:
+            is_samp_en = self.ent_widget.is_samp_en()
+            is_ap_en = self.ent_widget.is_ap_en()
+            (threshold_value, dev_coef_value, window_size, step_size,
+             calculation_type, use_threshold) = self.get_entropy_parameters()
+
+            if is_samp_en:
+                res_dic = {}
+                tmp = SampEn()
+                for file_name in files_list:
+                    try:
+                        res = tmp.prepare_calculate_window_sampen(m=dimension,
+                                                                  file_name=file_name,
+                                                                  calculation_type=calculation_type,
+                                                                  dev_coef_value=dev_coef_value,
+                                                                  use_threshold=use_threshold,
+                                                                  threshold_value=threshold_value,
+                                                                  window_size=window_size,
+                                                                  step_size=step_size)
+                        res_dic[file_name] = res
+                    except ValueError:
+                        res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
+
+                self.show_message('SampEn', res_dic)
+                make_report(res_dic=res_dic, is_ap_en=False)
+
+            if is_ap_en:
+                res_dic = {}
+                tmp = ApEn()
+                for file_name in files_list:
+                    try:
+                        res = tmp.prepare_calculate_window_apen(m=dimension,
+                                                                file_name=file_name,
+                                                                calculation_type=calculation_type,
+                                                                dev_coef_value=dev_coef_value,
+                                                                use_threshold=use_threshold,
+                                                                threshold_value=threshold_value,
+                                                                window_size=window_size,
+                                                                step_size=step_size)
+                        res_dic[file_name] = res
+                    except ValueError:
+                        res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
+                self.show_message('ApEn', res_dic)
+                make_report(res_dic=res_dic, is_ap_en=True)
 
     def show_message(self, source, res_dic):
         dialog = QMessageBox(self)
@@ -228,6 +224,7 @@ class ApEnWidget(QWidget):
         for name in fname[0]:
             self.fileNamesEdit.append(name)
         self.memorize_last_path()
+        self.check_run_button_state()
 
     def memorize_last_path(self):
         if not self.fileNamesEdit:
@@ -238,11 +235,16 @@ class ApEnWidget(QWidget):
 
     def toggle_calc_ent_cb(self):
         self.is_calc_ent = not self.is_calc_ent
+        self.ent_widget.set_ap_en(self.is_calc_ent)
+        self.ent_widget.set_samp_en(self.is_calc_ent)
         self.check_run_button_state()
         self.ent_widget.setHidden(not self.is_calc_ent)
 
+    def get_file_names(self):
+        return [x for x in self.fileNamesEdit.toPlainText().split('\n') if x]
+
     def check_run_button_state(self):
-        self.run_calculate.setEnabled(self.is_calc_ent or self.is_calc_cor_dim)
+        self.run_calculate.setEnabled((self.is_calc_ent or self.is_calc_cor_dim) and len(self.get_file_names()) > 0)
 
     def toggle_calc_cor_dim_cb(self):
         self.is_calc_cor_dim = not self.is_calc_cor_dim
@@ -250,18 +252,14 @@ class ApEnWidget(QWidget):
         self.cor_dim_widget.setHidden(not self.is_calc_cor_dim)
 
     def get_entropy_parameters(self):
-        files_list = self.fileNamesEdit.toPlainText().split('\n')
-        threshold_value = int(self.rThreshold.text()) if self.is_threshold_used else -1
-        dev_coef_value = float(self.rDevCoef.text()) if self.calculateR == CalculationType.DEV else -1
-        window_size = int(self.window_size_edit.text()) if self.is_windows_enabled else 0
-        step_size = int(self.window_step_edit.text()) if self.is_windows_enabled else 0
-        return files_list, threshold_value, dev_coef_value, window_size, step_size
+        threshold_value = self.ent_widget.get_threshold()
+        dev_coef_value = self.ent_widget.get_dev_coef_value()
+        window_size = self.ent_widget.get_window_size()
+        step_size = self.ent_widget.get_step_size()
+        calculation_type = self.ent_widget.get_calculation_type()
+        use_threshold = self.ent_widget.is_threshold()
+        return threshold_value, dev_coef_value, window_size, step_size, calculation_type, use_threshold
 
-    def get_cor_dim_parameters(self):
-        files_list = self.fileNamesEdit.toPlainText().split('\n')
-        dimension = int(self.cor_dim_dimension.text())
-        radius = float(self.cor_dim_radius.text())
-        return files_list, dimension, radius
 
 def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):
     if not res_dic:

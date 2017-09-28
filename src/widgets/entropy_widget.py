@@ -15,7 +15,6 @@ class EntropyWidget(QWidget):
         self.rConst.setChecked(True)
         self.rConst.clicked.connect(self.set_const_r)
         number_group.addWidget(self.rConst)
-        # self.rDev = QRadioButton("r=Rmax")
 
         dev_coef_group = QHBoxLayout()
         self.rDev = QRadioButton('r = SDNN * ', self)
@@ -33,6 +32,16 @@ class EntropyWidget(QWidget):
         return number_group
 
     def init_ui(self):
+        ap_en_cb = QCheckBox('Calculate ApEn', self)
+        ap_en_cb.setChecked(True)
+        self.is_ap_en_used = True
+        ap_en_cb.clicked.connect(self.toggle_ap_en_cb)
+
+        samp_en_cb = QCheckBox('Calculate SampEn', self)
+        samp_en_cb.setChecked(True)
+        self.is_samp_en_used = True
+        samp_en_cb.clicked.connect(self.toggle_samp_en_cb)
+
         cb = QCheckBox('Use threshold', self)
         cb.setChecked(True)
         self.is_threshold_used = True
@@ -57,6 +66,9 @@ class EntropyWidget(QWidget):
         grid.addWidget(self.window_step_edit, 2, 1)
         grid.addWidget(rLabel, 3, 0)
         grid.addLayout(number_group, 3, 1)
+        grid.addWidget(ap_en_cb, 4, 0)
+        grid.addWidget(samp_en_cb, 5, 0)
+
         self.setLayout(grid)
 
     def set_complex_r(self):
@@ -79,3 +91,40 @@ class EntropyWidget(QWidget):
         self.is_windows_enabled = not self.is_windows_enabled
         self.window_size_edit.setEnabled(self.is_windows_enabled)
         self.window_step_edit.setEnabled(self.is_windows_enabled)
+
+    def toggle_ap_en_cb(self):
+        self.is_ap_en_used = not self.is_ap_en_used
+
+    def toggle_samp_en_cb(self):
+        self.is_samp_en_used = not self.is_samp_en_used
+
+    def is_samp_en(self):
+        return self.is_samp_en_used
+
+    def is_ap_en(self):
+        return self.is_ap_en_used
+
+    def set_samp_en(self, v):
+        self.is_samp_en_used = v
+
+    def set_ap_en(self, v):
+        self.is_ap_en_used = v
+
+    def get_threshold(self):
+        return int(self.rThreshold.text()) if self.is_threshold_used else -1
+
+    def get_dev_coef_value(self):
+        return float(self.rDevCoef.text()) if self.calculateR == CalculationType.DEV else -1
+
+    def get_window_size(self):
+        return int(self.window_size_edit.text()) if self.is_windows_enabled else 0
+
+    def get_step_size(self):
+        return int(self.window_step_edit.text()) if self.is_windows_enabled else 0
+
+    def get_calculation_type(self):
+        return self.calculateR
+
+    def is_threshold(self):
+        return self.is_threshold_used
+
