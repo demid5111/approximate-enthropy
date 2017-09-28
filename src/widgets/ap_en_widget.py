@@ -1,111 +1,14 @@
 import os
-import sys
-from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,
-                             QTextEdit, QGridLayout, QApplication, QPushButton, QFileDialog, QRadioButton,
-                             QHBoxLayout, QCheckBox, QVBoxLayout, QMessageBox, QMainWindow, QTabWidget)
 
-from apen import ApEn, make_report
-from cordim import CorDim
-from sampen import SampEn
-from supporting import CalculationType
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QGridLayout, QLabel, QTextEdit, QCheckBox, \
+    QLineEdit, QFileDialog, QMessageBox
 
-
-class EntropyWidget(QWidget):
-    def __init__(self, parent):
-        super(QWidget, self).__init__(parent)
-        self.init_ui()
-
-    def config_r_enth_group(self):
-        number_group = QVBoxLayout()  # Number group
-        self.calculateR = CalculationType.CONST
-        self.rConst = QRadioButton("r=0.2*SDNN")
-        self.rConst.setChecked(True)
-        self.rConst.clicked.connect(self.set_const_r)
-        number_group.addWidget(self.rConst)
-        # self.rDev = QRadioButton("r=Rmax")
-
-        dev_coef_group = QHBoxLayout()
-        self.rDev = QRadioButton('r = SDNN * ', self)
-        self.rDev.clicked.connect(self.set_dev_r)
-        self.rDevCoef = QLineEdit("0.5")
-        self.rDevCoef.setEnabled(False)
-        dev_coef_group.addWidget(self.rDev)
-        dev_coef_group.addWidget(self.rDevCoef)
-        number_group.addLayout(dev_coef_group)
-
-        self.rComplex = QRadioButton("r=Rchon")
-        self.rComplex.clicked.connect(self.set_complex_r)
-        number_group.addWidget(self.rComplex)
-
-        return number_group
-
-    def init_ui(self):
-        cb = QCheckBox('Use threshold', self)
-        cb.setChecked(True)
-        self.is_threshold_used = True
-        cb.clicked.connect(self.toggle_threshold_checkbox)
-        self.rThreshold = QLineEdit("300")
-
-        window_cb = QCheckBox('Use windows', self)
-        window_cb.setChecked(True)
-        window_cb.clicked.connect(self.toggle_window_checkbox)
-        self.window_size_edit = QLineEdit("100")
-        self.window_step_edit = QLineEdit("10")
-        self.is_windows_enabled = True
-
-        rLabel = QLabel("r")
-        number_group = self.config_r_enth_group()
-
-        grid = QGridLayout()
-        grid.addWidget(cb, 0, 0)
-        grid.addWidget(self.rThreshold, 0, 1)
-        grid.addWidget(window_cb, 1, 0)
-        grid.addWidget(self.window_size_edit, 1, 1)
-        grid.addWidget(self.window_step_edit, 2, 1)
-        grid.addWidget(rLabel, 3, 0)
-        grid.addLayout(number_group, 3, 1)
-        self.setLayout(grid)
-
-    def set_complex_r(self):
-        self.calculateR = CalculationType.COMPLEX
-        self.rDevCoef.setEnabled(False)
-
-    def set_const_r(self):
-        self.calculateR = CalculationType.CONST
-        self.rDevCoef.setEnabled(False)
-
-    def set_dev_r(self):
-        self.calculateR = CalculationType.DEV
-        self.rDevCoef.setEnabled(True)
-
-    def toggle_threshold_checkbox(self):
-        self.is_threshold_used = not self.is_threshold_used
-        self.rThreshold.setEnabled(self.is_threshold_used)
-
-    def toggle_window_checkbox(self):
-        self.is_windows_enabled = not self.is_windows_enabled
-        self.window_size_edit.setEnabled(self.is_windows_enabled)
-        self.window_step_edit.setEnabled(self.is_windows_enabled)
-
-
-class CorDimWidget(QWidget):
-    def __init__(self, parent):
-        super(QWidget, self).__init__(parent)
-        self.init_ui()
-
-    def init_ui(self):
-        cor_dim_radius_label = QLabel("radius")
-        self.cor_dim_radius = QLineEdit("0.99")
-
-        # cor_dim_calculate = QPushButton("Calculate CorDim", self)
-        # cor_dim_calculate.clicked.connect(self.calculate_cor_dim)
-
-        grid = QGridLayout()
-        grid.addWidget(cor_dim_radius_label, 0, 0)
-        grid.addWidget(self.cor_dim_radius, 0, 1)
-        # grid.addWidget(cor_dim_calculate, 1, 1, 3, 1)
-
-        self.setLayout(grid)
+from src.core.apen import ApEn
+from src.core.cordim import CorDim
+from src.core.sampen import SampEn
+from src.utils.supporting import CalculationType
+from src.widgets.cor_dim_widget import CorDimWidget
+from src.widgets.entropy_widget import EntropyWidget
 
 
 class ApEnWidget(QWidget):
@@ -360,25 +263,30 @@ class ApEnWidget(QWidget):
         radius = float(self.cor_dim_radius.text())
         return files_list, dimension, radius
 
+def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):
+    if not res_dic:
+        print("Error in generating report")
+    with open(file_name, "w") as f:
+        f.write('Entropy type, {}\n'.format('Approximate Entropy' if is_ap_en else 'Sample Entropy'))
 
-class App(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.title = 'HeartAlgo-Analyzer'
-        self.left = 400
-        self.top = 200
-        self.width = 400
-        self.height = 500
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        # get sample size of window and step
+        any_key = list(res_dic.keys())[0]
+        f.write('Window size, {}\n'.format(ApEn.get_n_val(res_dic[any_key])))
+        f.write('Step size, {}\n'.format(ApEn.get_step_size_val(res_dic[any_key])))
 
-        self.table_widget = ApEnWidget(self)
-        self.setCentralWidget(self.table_widget)
+        f.write(','.join(['File name', 'Window number', 'Entropy', 'R', 'Average RR']) + '\n')
 
-        self.show()
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = App()
-    sys.exit(app.exec_())
+        for (file_name, ind_result) in res_dic.items():
+            try:
+                ApEn.get_err_val(ind_result)
+                f.write(','.join([file_name, ApEn.get_err_val(ind_result)]) + '\n')
+                continue
+            except KeyError:
+                pass
+            for (window_index, res_val) in enumerate(ApEn.get_result_val(ind_result)):
+                res_list = ['{}'.format(file_name),  # empty for filename column
+                            str(window_index),
+                            str('{0:.10f}'.format(res_val)),
+                            str(ApEn.get_r_val(ind_result)[window_index]),
+                            str(ApEn.get_avg_rr_val(ind_result)[window_index])]
+                f.write(','.join(res_list) + '\n')

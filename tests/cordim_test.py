@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from cordim import CorDim
+from src.core.cordim import CorDim
 
 
 class TestCorDimCalculateHeviside(unittest.TestCase):
@@ -50,8 +50,8 @@ class TestCorDimCalculateCor(unittest.TestCase):
     def setUp(self):
         self.corDim = CorDim()
 
-    @patch('apen.ApEn.calculate_distance')
-    @patch('cordim.CorDim.calc_heviside')
+    @patch('src.core.apen.ApEn.calculate_distance')
+    @patch('src.core.cordim.CorDim.calc_heviside')
     def test_calc_cor_func_0(self, mock_cordim_calc_haviside, mock_apen_calc_distance):
         mock_apen_calc_distance.return_value = 0.3
         mock_cordim_calc_haviside.return_value=0.4
@@ -60,8 +60,8 @@ class TestCorDimCalculateCor(unittest.TestCase):
         mock_cordim_calc_haviside.assert_called_with(5, 0.3)
         self.assertAlmostEqual(0.4, r, places=4, msg='calc cor fails for normal case')
 
-    @patch('apen.ApEn.calculate_distance')
-    @patch('cordim.CorDim.calc_heviside')
+    @patch('src.core.apen.ApEn.calculate_distance')
+    @patch('src.core.cordim.CorDim.calc_heviside')
     def test_calc_cor_func_1(self, mock_cordim_calc_haviside, mock_apen_calc_distance):
         r = self.corDim.calc_cor_func([], 5)
         self.assertEqual(0, r, msg='calc cor fails for empty sequence')

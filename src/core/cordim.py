@@ -1,6 +1,6 @@
 from math import log
 
-from apen import ApEn
+from src.core.apen import ApEn
 
 
 class CorDim(ApEn):

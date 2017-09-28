@@ -2,8 +2,9 @@ import operator
 import os
 from math import log, floor
 
-import constants
-from supporting import CalculationType
+import src.utils.constants as constants
+
+from src.utils.supporting import CalculationType
 
 __author__ = 'demidovs'
 
@@ -156,35 +157,6 @@ class ApEn:
             average_rr_list.append(self.get_average_rr(seq=new_seq))
             seq_list.append(new_seq)
         return seq_list, average_rr_list, r_val_list, window_size, step_size
-
-
-def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):
-    if not res_dic:
-        print("Error in generating report")
-    with open(file_name, "w") as f:
-        f.write('Entropy type, {}\n'.format('Approximate Entropy' if is_ap_en else 'Sample Entropy'))
-
-        # get sample size of window and step
-        any_key = list(res_dic.keys())[0]
-        f.write('Window size, {}\n'.format(ApEn.get_n_val(res_dic[any_key])))
-        f.write('Step size, {}\n'.format(ApEn.get_step_size_val(res_dic[any_key])))
-
-        f.write(','.join(['File name', 'Window number', 'Entropy', 'R', 'Average RR']) + '\n')
-
-        for (file_name, ind_result) in res_dic.items():
-            try:
-                ApEn.get_err_val(ind_result)
-                f.write(','.join([file_name, ApEn.get_err_val(ind_result)]) + '\n')
-                continue
-            except KeyError:
-                pass
-            for (window_index, res_val) in enumerate(ApEn.get_result_val(ind_result)):
-                res_list = ['{}'.format(file_name),  # empty for filename column
-                            str(window_index),
-                            str('{0:.10f}'.format(res_val)),
-                            str(ApEn.get_r_val(ind_result)[window_index]),
-                            str(ApEn.get_avg_rr_val(ind_result)[window_index])]
-                f.write(','.join(res_list) + '\n')
 
 
 if __name__ == "__main__":

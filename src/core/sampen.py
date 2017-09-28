@@ -1,9 +1,10 @@
 import os
 from math import log
 
-import constants
-from apen import ApEn
-from supporting import CalculationType
+import src.utils.constants as constants
+from src.core.apen import ApEn
+
+from src.utils.supporting import CalculationType
 
 __author__ = 'demidovs'
 
