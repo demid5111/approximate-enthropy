@@ -2,6 +2,8 @@ import os
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QGridLayout, QLabel, QTextEdit, QCheckBox, \
     QLineEdit, QFileDialog, QMessageBox
+
+from src.core.report import CorDimReport, SampEnReport, ApEnReport
 from src.gui.widgets.cor_dim_widget import CorDimWidget
 
 from src.core.apen import ApEn
@@ -165,17 +167,10 @@ class ApEnWidget(QWidget):
 
         res_dic = {}
         for file_name in files_list:
-            res_dic[file_name] = {}
+            res_dic[file_name] = []
             if is_cord_dim_enabled:
-                analysis_name = 'CorDim'
-                radius = self.cor_dim_widget.get_radius()
-                tmp = CorDim()
-
-                try:
-                    res = tmp.prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size)
-                    res_dic[file_name][analysis_name] = res
-                except ValueError:
-                    res_dic[file_name][analysis_name] = {'error': "Error! For file {}".format(file_name)}
+                res = self.calc_cor_dim_wrapper(file_name, dimension, window_size, step_size)
+                res_dic[file_name].append(res)
 
             if is_ent_enabled:
                 is_samp_en = self.ent_widget.is_samp_en()
@@ -183,43 +178,64 @@ class ApEnWidget(QWidget):
                 threshold_value, dev_coef_value, calculation_type, use_threshold = self.get_entropy_parameters()
 
                 if is_samp_en:
-                    analysis_name = 'SampEn'
-                    tmp = SampEn()
-                    try:
-                        res = tmp.prepare_calculate_window_sampen(m=dimension,
-                                                                  file_name=file_name,
-                                                                  calculation_type=calculation_type,
-                                                                  dev_coef_value=dev_coef_value,
-                                                                  use_threshold=use_threshold,
-                                                                  threshold_value=threshold_value,
-                                                                  window_size=window_size,
-                                                                  step_size=step_size)
-                        res_dic[file_name][analysis_name] = res
-                    except ValueError:
-                        res_dic[file_name][analysis_name] = {'error': "Error! For file {}".format(file_name)}
+                    res = self.calc_sampen_wrapper(file_name, dimension, window_size, step_size, calculation_type,
+                            dev_coef_value, use_threshold, threshold_value)
+                    res_dic[file_name].append(res)
 
                 if is_ap_en:
-                    analysis_name = 'ApEn'
-                    tmp = ApEn()
-                    try:
-                        res = tmp.prepare_calculate_window_apen(m=dimension,
-                                                                file_name=file_name,
-                                                                calculation_type=calculation_type,
-                                                                dev_coef_value=dev_coef_value,
-                                                                use_threshold=use_threshold,
-                                                                threshold_value=threshold_value,
-                                                                window_size=window_size,
-                                                                step_size=step_size)
-                        res_dic[file_name][analysis_name] = res
-                    except ValueError:
-                        res_dic[file_name][analysis_name] = {'error': "Error! For file {}".format(file_name)}
+                    res = self.calc_apen_wrapper(file_name, dimension, window_size, step_size, calculation_type,
+                            dev_coef_value, use_threshold, threshold_value)
+                    res_dic[file_name].append(res)
 
-        self.show_message('ApEn', res_dic)
-        make_report(res_dic=res_dic, is_ap_en=True)
-        self.show_message('SampEn', res_dic)
-        make_report(res_dic=res_dic, is_ap_en=False)
-        self.show_message('CorDim', res_dic)
-        make_report(res_dic=res_dic, is_ap_en=False)
+        analysis_names = list(list(res_dic.keys())[0].keys())
+        self.show_message(','.join(analysis_names), res_dic)
+        make_report(res_dic=res_dic, analysis_types=analysis_names)
+
+    def calc_cor_dim_wrapper(self, file_name, dimension, window_size, step_size):
+        radius = self.cor_dim_widget.get_radius()
+        tmp = CorDim()
+
+        try:
+            res = tmp.prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size)
+        except ValueError:
+            res = CorDimReport()
+            res.set_error("Error! For file {}".format(file_name))
+
+        return res
+
+    def calc_sampen_wrapper(self, file_name, dimension, window_size, step_size, calculation_type,
+                            dev_coef_value, use_threshold, threshold_value):
+        tmp = SampEn()
+        try:
+            res = tmp.prepare_calculate_window_sampen(m=dimension,
+                                                      file_name=file_name,
+                                                      calculation_type=calculation_type,
+                                                      dev_coef_value=dev_coef_value,
+                                                      use_threshold=use_threshold,
+                                                      threshold_value=threshold_value,
+                                                      window_size=window_size,
+                                                      step_size=step_size)
+        except ValueError:
+            res = SampEnReport()
+            res.set_error("Error! For file {}".format(file_name))
+        return res
+
+    def calc_apen_wrapper(self, file_name, dimension, window_size, step_size, calculation_type,
+                            dev_coef_value, use_threshold, threshold_value):
+        tmp = ApEn()
+        try:
+            res = tmp.prepare_calculate_window_apen(m=dimension,
+                                                      file_name=file_name,
+                                                      calculation_type=calculation_type,
+                                                      dev_coef_value=dev_coef_value,
+                                                      use_threshold=use_threshold,
+                                                      threshold_value=threshold_value,
+                                                      window_size=window_size,
+                                                      step_size=step_size)
+        except ValueError:
+            res = ApEnReport()
+            res.set_error("Error! For file {}".format(file_name))
+        return res
 
     def show_message(self, source, res_dic):
         dialog = QMessageBox(self)
@@ -259,30 +275,48 @@ class ApEnWidget(QWidget):
         return threshold_value, dev_coef_value, calculation_type, use_threshold
 
 
-def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):
+def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True, analysis_types=()):
     if not res_dic:
         print("Error in generating report")
     with open(file_name, "w") as f:
-        f.write('Entropy type, {}\n'.format('Approximate Entropy' if is_ap_en else 'Sample Entropy'))
+        f.write('Analysis applied, {}\n'.format(','.join(analysis_types)))
 
         # get sample size of window and step
         any_key = list(res_dic.keys())[0]
         f.write('Window size, {}\n'.format(ApEn.get_n_val(res_dic[any_key])))
         f.write('Step size, {}\n'.format(ApEn.get_step_size_val(res_dic[any_key])))
 
-        f.write(','.join(['File name', 'Window number', 'Entropy', 'R', 'Average RR']) + '\n')
+        column_names = ['File name', 'Window number', 'Entropy', 'R', 'Average RR']
+        f.write(','.join(column_names) + '\n')
 
-        for (file_name, ind_result) in res_dic.items():
-            try:
-                ApEn.get_err_val(ind_result)
-                f.write(','.join([file_name, ApEn.get_err_val(ind_result)]) + '\n')
-                continue
-            except KeyError:
-                pass
-            for (window_index, res_val) in enumerate(ApEn.get_result_val(ind_result)):
-                res_list = ['{}'.format(file_name),  # empty for filename column
-                            str(window_index),
-                            str('{0:.10f}'.format(res_val)),
-                            str(ApEn.get_r_val(ind_result)[window_index]),
-                            str(ApEn.get_avg_rr_val(ind_result)[window_index])]
-                f.write(','.join(res_list) + '\n')
+        # the biggest possible order
+        # file_name, window_index, ap_en_res, ap_en_avg_rr, samp_en_res, samp_en_avg_rr, cordim_radius
+
+        for file_name, reports in res_dic.items():
+            line_values = ['{}'.format(file_name),]
+            ap_en_values = []
+            samp_en_values = []
+            cor_dim_values = []
+            for report in reports:
+                if isinstance(report, ApEnReport):
+                    pass
+                elif isinstance(report, SampEnReport):
+                    pass
+                elif isinstance(report, CorDimReport):
+                    cor_dim_values = [report.get_radius(),]
+                # try:
+                #     ApEn.get_err_val(ind_result)
+                #     f.write(','.join([file_name, ApEn.get_err_val(ind_result)]) + '\n')
+                #     continue
+                # except KeyError:
+                #     pass
+                #
+                # for (window_index, res_val) in enumerate(ApEn.get_result_val(ind_result)):
+                #     res_list = ['{}'.format(file_name),  # empty for filename column
+                #                 str(window_index),
+                #                 str('{0:.10f}'.format(res_val)),
+                #                 str(ApEn.get_r_val(ind_result)[window_index]),
+                #                 str(ApEn.get_avg_rr_val(ind_result)[window_index])]
+            dump_string = ','.join(line_values)
+            f.write(dump_string + '\n')
+

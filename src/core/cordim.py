@@ -1,6 +1,7 @@
 from math import log, floor
 
 from src.core.apen import ApEn
+from src.core.report import CorDimReport
 
 
 class CorDim(ApEn):
@@ -52,14 +53,16 @@ class CorDim(ApEn):
     def prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size):
         seq_list = CorDim.prepare_windows(file_name, window_size, step_size)
 
-        res = [CorDim.calculate_cor_dim(i) for i in seq_list]
-        return {
-            'result': res,
-            'dimension': dimension,
-            'radius': radius,
-            'n': window_size,
-            'step_size': step_size
-        }
+        cordim_results = [CorDim.calculate_cor_dim(i) for i in seq_list]
+
+        res_report = CorDimReport()
+        res_report.set_radius(radius)
+        res_report.set_window_size(window_size)
+        res_report.set_step_size(step_size)
+        res_report.set_result_values(cordim_results)
+        res_report.set_dimension(dimension)
+
+        return res_report
 
 
 if __name__ == '__main__':

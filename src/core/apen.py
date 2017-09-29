@@ -3,6 +3,7 @@ import os
 from math import log, floor
 
 import src.utils.constants as constants
+from src.core.report import ApEnReport
 
 from src.utils.supporting import CalculationType
 
@@ -127,13 +128,15 @@ class ApEn:
                                                                                                          step_size)
         apen_results = [self.calculate_apen(m=m, seq=seq_list[i], r=r_val_list[i]) for i in range(len(seq_list))]
 
-        return {
-            'result': apen_results,
-            'average_rr': average_rr_list,
-            'r': r_val_list,
-            'n': window_size,
-            'step_size': step_size,
-        }
+        res_report = ApEnReport()
+        res_report.set_avg_rr(average_rr_list)
+        res_report.set_window_size(window_size)
+        res_report.set_step_size(step_size)
+        res_report.set_result_values(apen_results)
+        res_report.set_r_values(r_val_list)
+        res_report.set_dimension(m)
+
+        return res_report
 
     def prepare_windows_calculation(self, m, file_name, calculation_type, dev_coef_value, use_threshold,
                                     threshold_value, window_size=None, step_size=None):

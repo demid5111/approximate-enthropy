@@ -3,6 +3,7 @@ from math import log
 
 import src.utils.constants as constants
 from src.core.apen import ApEn
+from src.core.report import SampEnReport
 
 from src.utils.supporting import CalculationType
 
@@ -52,13 +53,14 @@ class SampEn(ApEn):
                                                                                                          step_size)
         sampen_results = [self.calculate_sampen(m=m, seq=seq_list[i], r=r_val_list[i]) for i in range(len(seq_list))]
 
-        return {
-            'result': sampen_results,
-            'average_rr': average_rr_list,
-            'r': r_val_list,
-            'n': window_size,
-            'step_size': step_size
-        }
+        res_report = SampEnReport()
+        res_report.set_avg_rr(average_rr_list)
+        res_report.set_window_size(window_size)
+        res_report.set_step_size(step_size)
+        res_report.set_result_values(sampen_results)
+        res_report.set_r_values(r_val_list)
+
+        return res_report
 
 
 if __name__ == '__main__':
