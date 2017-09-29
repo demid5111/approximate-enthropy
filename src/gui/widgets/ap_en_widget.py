@@ -2,13 +2,12 @@ import os
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QGridLayout, QLabel, QTextEdit, QCheckBox, \
     QLineEdit, QFileDialog, QMessageBox
+from src.gui.widgets.cor_dim_widget import CorDimWidget
 
 from src.core.apen import ApEn
 from src.core.cordim import CorDim
 from src.core.sampen import SampEn
-from src.utils.supporting import CalculationType
-from src.widgets.cor_dim_widget import CorDimWidget
-from src.widgets.entropy_widget import EntropyWidget
+from src.gui.widgets.entropy_widget import EntropyWidget
 
 
 class ApEnWidget(QWidget):
@@ -59,6 +58,32 @@ class ApEnWidget(QWidget):
 
         return file_chooser_group
 
+    def clean_file_names(self):
+        self.fileNamesEdit.clear()
+        self.check_run_button_state()
+
+    def show_file_chooser(self):
+        path = ""
+        try:
+            with open(self.fileName, "r") as f:
+                path = f.readline().strip()
+        except FileNotFoundError:
+            pass
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', path, "DAT (*.dat, *.txt)")
+        self.fileNamesEdit.setText("")
+        print(fname)
+        for name in fname[0]:
+            self.fileNamesEdit.append(name)
+        self.memorize_last_path()
+        self.check_run_button_state()
+
+    def memorize_last_path(self):
+        if not self.fileNamesEdit:
+            return
+        path = os.path.dirname(self.fileNamesEdit.toPlainText().split('\n')[0])
+        with open(self.fileName, "w") as f:
+            f.write(path + '/')
+
     def config_ent_settings_grid(self):
         cb = QCheckBox('Use threshold', self)
         cb.setChecked(True)
@@ -88,17 +113,23 @@ class ApEnWidget(QWidget):
     def config_entropy_tab(self):
         mLabel = QLabel('m')
         self.mEdit = QLineEdit("2")
+        window_cb = QCheckBox('Use windows', self)
+        window_cb.setChecked(True)
+        window_cb.clicked.connect(self.toggle_window_checkbox)
+        self.window_size_edit = QLineEdit("100")
+        self.window_step_edit = QLineEdit("10")
+        self.is_windows_enabled = True
 
         self.is_use_ent_cb = QCheckBox('Calculate entropy?', self)
-        self.is_use_ent_cb.setChecked(True)
         self.is_calc_ent = True
+        self.is_use_ent_cb.setChecked(self.is_calc_ent)
         self.is_use_ent_cb.clicked.connect(self.toggle_calc_ent_cb)
 
         self.ent_widget = EntropyWidget(self)
 
         self.is_use_cor_dim_cb = QCheckBox('Calculate cor dim?', self)
-        self.is_use_cor_dim_cb.setChecked(True)
         self.is_calc_cor_dim = True
+        self.is_use_cor_dim_cb.setChecked(self.is_calc_cor_dim)
         self.is_use_cor_dim_cb.clicked.connect(self.toggle_calc_cor_dim_cb)
 
         self.cor_dim_widget = CorDimWidget(self)
@@ -109,34 +140,19 @@ class ApEnWidget(QWidget):
         grid = QGridLayout()
         grid.addWidget(mLabel, 0, 0)
         grid.addWidget(self.mEdit, 0, 1)
-        grid.addWidget(self.is_use_ent_cb, 1, 1)
-        grid.addWidget(self.ent_widget, 2, 1)
-        grid.addWidget(self.is_use_cor_dim_cb, 3, 1)
-        grid.addWidget(self.cor_dim_widget, 4, 1)
-        grid.addWidget(self.run_calculate, 8, 1, 3, 1)
+        grid.addWidget(window_cb, 1, 0)
+        grid.addWidget(self.window_size_edit, 1, 1)
+        grid.addWidget(self.window_step_edit, 2, 1)
+        grid.addWidget(self.is_use_ent_cb, 3, 0)
+        grid.addWidget(self.ent_widget, 4, 1)
+        grid.addWidget(self.is_use_cor_dim_cb, 5, 0)
+        grid.addWidget(self.cor_dim_widget, 6, 1)
+        grid.addWidget(self.run_calculate, 10, 0, 3, 3)
 
         file_chooser_group = self.config_filechooser_group()
-        grid.addLayout(file_chooser_group, 5, 0, 1, 3)
+        grid.addLayout(file_chooser_group, 7, 0, 1, 3)
 
         return grid
-
-    def config_cordim_grid(self):
-        cor_dim_radius_label = QLabel("radius")
-        self.cor_dim_radius = QLineEdit("0.99")
-
-        cor_dim_calculate = QPushButton("Calculate CorDim", self)
-        cor_dim_calculate.clicked.connect(self.calculate_cor_dim)
-
-        grid = QGridLayout()
-        grid.addWidget(cor_dim_radius_label, 0, 0)
-        grid.addWidget(self.cor_dim_radius, 0, 1)
-        grid.addWidget(cor_dim_calculate, 1, 1, 3, 1)
-
-        return grid
-
-    def clean_file_names(self):
-        self.fileNamesEdit.clear()
-        self.check_run_button_state()
 
     def calculate(self):
         is_ent_enabled = self.is_use_ent_cb
@@ -144,31 +160,31 @@ class ApEnWidget(QWidget):
 
         files_list = self.get_file_names()
         dimension = int(self.mEdit.text())
+        window_size = self.ent_widget.get_window_size()
+        step_size = self.ent_widget.get_step_size()
 
-        if is_cord_dim_enabled:
-            radius = self.cor_dim_widget.get_radius()
-            res_dic = {}
-            tmp = CorDim()
-            for file_name in files_list:
+        res_dic = {}
+        for file_name in files_list:
+            res_dic[file_name] = {}
+            if is_cord_dim_enabled:
+                analysis_name = 'CorDim'
+                radius = self.cor_dim_widget.get_radius()
+                tmp = CorDim()
+
                 try:
-                    res = tmp.calculate_cor_dim(file_name, dimension, radius)
-                    res_dic[file_name] = res
+                    res = tmp.prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size)
+                    res_dic[file_name][analysis_name] = res
                 except ValueError:
-                    res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
+                    res_dic[file_name][analysis_name] = {'error': "Error! For file {}".format(file_name)}
 
-            self.show_message('CorDim', res_dic)
-            make_report(res_dic=res_dic, is_ap_en=False)
+            if is_ent_enabled:
+                is_samp_en = self.ent_widget.is_samp_en()
+                is_ap_en = self.ent_widget.is_ap_en()
+                threshold_value, dev_coef_value, calculation_type, use_threshold = self.get_entropy_parameters()
 
-        if is_ent_enabled:
-            is_samp_en = self.ent_widget.is_samp_en()
-            is_ap_en = self.ent_widget.is_ap_en()
-            (threshold_value, dev_coef_value, window_size, step_size,
-             calculation_type, use_threshold) = self.get_entropy_parameters()
-
-            if is_samp_en:
-                res_dic = {}
-                tmp = SampEn()
-                for file_name in files_list:
+                if is_samp_en:
+                    analysis_name = 'SampEn'
+                    tmp = SampEn()
                     try:
                         res = tmp.prepare_calculate_window_sampen(m=dimension,
                                                                   file_name=file_name,
@@ -178,17 +194,13 @@ class ApEnWidget(QWidget):
                                                                   threshold_value=threshold_value,
                                                                   window_size=window_size,
                                                                   step_size=step_size)
-                        res_dic[file_name] = res
+                        res_dic[file_name][analysis_name] = res
                     except ValueError:
-                        res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
+                        res_dic[file_name][analysis_name] = {'error': "Error! For file {}".format(file_name)}
 
-                self.show_message('SampEn', res_dic)
-                make_report(res_dic=res_dic, is_ap_en=False)
-
-            if is_ap_en:
-                res_dic = {}
-                tmp = ApEn()
-                for file_name in files_list:
+                if is_ap_en:
+                    analysis_name = 'ApEn'
+                    tmp = ApEn()
                     try:
                         res = tmp.prepare_calculate_window_apen(m=dimension,
                                                                 file_name=file_name,
@@ -198,11 +210,16 @@ class ApEnWidget(QWidget):
                                                                 threshold_value=threshold_value,
                                                                 window_size=window_size,
                                                                 step_size=step_size)
-                        res_dic[file_name] = res
+                        res_dic[file_name][analysis_name] = res
                     except ValueError:
-                        res_dic[file_name] = {'error': "Error! For file {}".format(file_name)}
-                self.show_message('ApEn', res_dic)
-                make_report(res_dic=res_dic, is_ap_en=True)
+                        res_dic[file_name][analysis_name] = {'error': "Error! For file {}".format(file_name)}
+
+        self.show_message('ApEn', res_dic)
+        make_report(res_dic=res_dic, is_ap_en=True)
+        self.show_message('SampEn', res_dic)
+        make_report(res_dic=res_dic, is_ap_en=False)
+        self.show_message('CorDim', res_dic)
+        make_report(res_dic=res_dic, is_ap_en=False)
 
     def show_message(self, source, res_dic):
         dialog = QMessageBox(self)
@@ -211,34 +228,17 @@ class ApEnWidget(QWidget):
                 "{} calculated for: \n {}".format(source, "".join(["- {}, \n".format(i) for i in res_dic.keys()])))
         dialog.show()
 
-    def show_file_chooser(self):
-        path = ""
-        try:
-            with open(self.fileName, "r") as f:
-                path = f.readline().strip()
-        except FileNotFoundError:
-            pass
-        fname = QFileDialog.getOpenFileNames(self, 'Open file', path, "DAT (*.dat, *.txt)")
-        self.fileNamesEdit.setText("")
-        print(fname)
-        for name in fname[0]:
-            self.fileNamesEdit.append(name)
-        self.memorize_last_path()
-        self.check_run_button_state()
-
-    def memorize_last_path(self):
-        if not self.fileNamesEdit:
-            return
-        path = os.path.dirname(self.fileNamesEdit.toPlainText().split('\n')[0])
-        with open(self.fileName, "w") as f:
-            f.write(path + '/')
-
     def toggle_calc_ent_cb(self):
         self.is_calc_ent = not self.is_calc_ent
         self.ent_widget.set_ap_en(self.is_calc_ent)
         self.ent_widget.set_samp_en(self.is_calc_ent)
         self.check_run_button_state()
         self.ent_widget.setHidden(not self.is_calc_ent)
+
+    def toggle_window_checkbox(self):
+        self.is_windows_enabled = not self.is_windows_enabled
+        self.window_size_edit.setEnabled(self.is_windows_enabled)
+        self.window_step_edit.setEnabled(self.is_windows_enabled)
 
     def get_file_names(self):
         return [x for x in self.fileNamesEdit.toPlainText().split('\n') if x]
@@ -254,11 +254,9 @@ class ApEnWidget(QWidget):
     def get_entropy_parameters(self):
         threshold_value = self.ent_widget.get_threshold()
         dev_coef_value = self.ent_widget.get_dev_coef_value()
-        window_size = self.ent_widget.get_window_size()
-        step_size = self.ent_widget.get_step_size()
         calculation_type = self.ent_widget.get_calculation_type()
         use_threshold = self.ent_widget.is_threshold()
-        return threshold_value, dev_coef_value, window_size, step_size, calculation_type, use_threshold
+        return threshold_value, dev_coef_value, calculation_type, use_threshold
 
 
 def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True):

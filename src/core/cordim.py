@@ -1,4 +1,4 @@
-from math import log
+from math import log, floor
 
 from src.core.apen import ApEn
 
@@ -24,19 +24,41 @@ class CorDim(ApEn):
         return cor_val / radius_val
 
     @staticmethod
-    def calculate_cor_dim(file_name, dimension, radius):
-        # 1. read the file
-        seq_list = ApEn.read_series(file_name, use_threshold=False, threshold_value=0)
-        portrait = CorDim.slice_intervals(dimension, seq_list)
+    def calculate_cor_dim(u_list):
+        portrait = CorDim.slice_intervals(dimension, u_list)
         res = CorDim.calc_cor_func(portrait, radius)
-        attractor = CorDim.calc_attractor(res, radius)
+        return CorDim.calc_attractor(res, radius)
+
+    @staticmethod
+    def prepare_windows(file_name, window_size, step_size):
+        # 1. read the file
+        u_list = ApEn.read_series(file_name, use_threshold=False, threshold_value=0)
+        if not window_size:
+            window_size = len(u_list)
+            step_size = 1
+        assert window_size <= len(u_list), "Window size can't be bigger than the size of the overall sequence"
+
+        seq_list = []
+        for current_step in range(floor((len(u_list) - window_size) / step_size) + 1):
+            next_max = current_step * step_size + window_size
+            if next_max > len(u_list):
+                break
+            new_seq = u_list[current_step * step_size:next_max]
+            seq_list.append(new_seq)
+
+        return seq_list
+
+    @staticmethod
+    def prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size):
+        seq_list = CorDim.prepare_windows(file_name, window_size, step_size)
+
+        res = [CorDim.calculate_cor_dim(i) for i in seq_list]
         return {
-            'result': [attractor],
-            'r': [radius,],
-            'n': dimension,
+            'result': res,
             'dimension': dimension,
-            'step_size': 0,
-            'average_rr': [0,]
+            'radius': radius,
+            'n': window_size,
+            'step_size': step_size
         }
 
 

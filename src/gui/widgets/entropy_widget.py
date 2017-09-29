@@ -48,22 +48,13 @@ class EntropyWidget(QWidget):
         cb.clicked.connect(self.toggle_threshold_checkbox)
         self.rThreshold = QLineEdit("300")
 
-        window_cb = QCheckBox('Use windows', self)
-        window_cb.setChecked(True)
-        window_cb.clicked.connect(self.toggle_window_checkbox)
-        self.window_size_edit = QLineEdit("100")
-        self.window_step_edit = QLineEdit("10")
-        self.is_windows_enabled = True
-
         rLabel = QLabel("r")
         number_group = self.config_r_enth_group()
 
         grid = QGridLayout()
         grid.addWidget(cb, 0, 0)
         grid.addWidget(self.rThreshold, 0, 1)
-        grid.addWidget(window_cb, 1, 0)
-        grid.addWidget(self.window_size_edit, 1, 1)
-        grid.addWidget(self.window_step_edit, 2, 1)
+
         grid.addWidget(rLabel, 3, 0)
         grid.addLayout(number_group, 3, 1)
         grid.addWidget(ap_en_cb, 4, 0)
@@ -86,11 +77,6 @@ class EntropyWidget(QWidget):
     def toggle_threshold_checkbox(self):
         self.is_threshold_used = not self.is_threshold_used
         self.rThreshold.setEnabled(self.is_threshold_used)
-
-    def toggle_window_checkbox(self):
-        self.is_windows_enabled = not self.is_windows_enabled
-        self.window_size_edit.setEnabled(self.is_windows_enabled)
-        self.window_step_edit.setEnabled(self.is_windows_enabled)
 
     def toggle_ap_en_cb(self):
         self.is_ap_en_used = not self.is_ap_en_used

@@ -2,7 +2,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
-from src.widgets.ap_en_widget import ApEnWidget
+from src.gui.widgets.ap_en_widget import ApEnWidget
 
 
 class App(QMainWindow):
