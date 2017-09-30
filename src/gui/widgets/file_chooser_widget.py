@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QTextEdit, QLabel
 class FileChooserWidget(QWidget):
     new_files_chosen = pyqtSignal()
     erased_files = pyqtSignal()
+
     def __init__(self, parent, file_name):
         super(QWidget, self).__init__(parent)
         self.file_name = file_name

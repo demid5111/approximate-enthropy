@@ -51,11 +51,14 @@ class CorDim(ApEn):
 
     @staticmethod
     def prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size):
-        seq_list = CorDim.prepare_windows(file_name, window_size, step_size)
-
-        cordim_results = [CorDim.calculate_cor_dim(i, dimension, radius) for i in seq_list]
-
         res_report = CorDimReport()
+        try:
+            seq_list = CorDim.prepare_windows(file_name, window_size, step_size)
+            cordim_results = [CorDim.calculate_cor_dim(i, dimension, radius) for i in seq_list]
+        except ValueError:
+            res_report.set_error("Error! For file {}".format(file_name))
+            return res_report
+
         res_report.set_radius(radius)
         res_report.set_window_size(window_size)
         res_report.set_step_size(step_size)

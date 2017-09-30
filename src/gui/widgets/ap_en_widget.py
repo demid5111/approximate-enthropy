@@ -1,15 +1,10 @@
-import os
-
-import time
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QGridLayout, QLabel, QCheckBox, \
-    QLineEdit, QMessageBox
+    QLineEdit, QMessageBox, QProgressBar
 
-from src.core.report import CorDimReport, SampEnReport, ApEnReport, ReportManager
+from src.gui.threads.CalculationThread import CalculationThread
 from src.gui.widgets.cor_dim_widget import CorDimWidget
 
-from src.core.apen import ApEn
-from src.core.cordim import CorDim
-from src.core.sampen import SampEn
 from src.gui.widgets.entropy_widget import EntropyWidget
 from src.gui.widgets.file_chooser_widget import FileChooserWidget
 
@@ -18,7 +13,8 @@ class ApEnWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.fileName = ".memory"
-        self.files_selected = False # represent if FileChooserWidget has any files selected
+        self.files_selected = True  # represent if FileChooserWidget has any files selected
+        self.is_in_progress = False  # represent if calculation is in progress
         self.init_ui()
 
     def init_ui(self):
@@ -40,6 +36,7 @@ class ApEnWidget(QWidget):
         # Add tabs to widget
         layout.addWidget(self.tabs)
         self.setLayout(layout)
+        self.check_run_button_state()
 
     def config_entropy_tab(self):
         mLabel = QLabel('m')
@@ -79,12 +76,22 @@ class ApEnWidget(QWidget):
         self.cor_dim_widget = CorDimWidget(self)
         grid.addWidget(self.cor_dim_widget, 6, 1)
 
-        grid.addWidget(self.run_calculate, 10, 0, 3, 3)
-
         self.file_chooser_widget = FileChooserWidget(self, self.fileName)
         self.file_chooser_widget.new_files_chosen.connect(self.on_new_files_chosen)
         self.file_chooser_widget.erased_files.connect(self.on_erased_files)
         grid.addWidget(self.file_chooser_widget, 7, 0, 1, 3)
+
+        grid.addWidget(self.run_calculate, 10, 0, 1, 3)
+
+        # Creating a label
+        self.progress_label = QLabel('Calculation progress', self)
+
+        # Creating a progress bar and setting the value limits
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setMaximum(100)
+        self.progress_bar.setMinimum(0)
+        grid.addWidget(self.progress_label, 14, 0)
+        grid.addWidget(self.progress_bar, 14, 1)
 
         return grid
 
@@ -103,85 +110,40 @@ class ApEnWidget(QWidget):
         window_size = self.get_window_size()
         step_size = self.get_step_size()
 
-        res_dic = {}
-        for file_name in files_list:
-            t0 = time.time()
-            res_dic[file_name] = []
-            if is_cord_dim_enabled:
-                res = self.calc_cor_dim_wrapper(file_name, dimension, window_size, step_size)
-                res_dic[file_name].append(res)
+        cor_dim_radius = self.cor_dim_widget.get_radius() if is_cord_dim_enabled else 0
+        is_samp_en = self.ent_widget.is_samp_en() if is_ent_enabled else False
+        is_ap_en = self.ent_widget.is_ap_en() if is_ent_enabled else False
+        en_threshold_value, en_dev_coef_value, en_calculation_type, en_use_threshold = (self.get_entropy_parameters()
+                                                                                        if is_ent_enabled else [0, 0, 0,
+                                                                                                                0])
+        self.calc_thread = CalculationThread(is_cord_dim_enabled, files_list, dimension,
+                                             window_size, step_size,
+                                             cor_dim_radius, is_samp_en, is_ap_en, en_use_threshold,
+                                             en_threshold_value, en_dev_coef_value, en_calculation_type)
 
-            if is_ent_enabled:
-                is_samp_en = self.ent_widget.is_samp_en()
-                is_ap_en = self.ent_widget.is_ap_en()
-                threshold_value, dev_coef_value, calculation_type, use_threshold = self.get_entropy_parameters()
+        self.set_in_progress(True)
+        self.calc_thread.done.connect(self.show_message)
+        self.calc_thread.done.connect(self.erase_in_progress)
+        self.calc_thread.progress.connect(self.track_ui_progress)
+        self.calc_thread.start()
 
-                if is_samp_en:
-                    res = self.calc_sampen_wrapper(file_name, dimension, window_size, step_size, calculation_type,
-                                                   dev_coef_value, use_threshold, threshold_value)
-                    res_dic[file_name].append(res)
+    def track_ui_progress(self, val):
+        self.progress_bar.setValue(val)
 
-                if is_ap_en:
-                    res = self.calc_apen_wrapper(file_name, dimension, window_size, step_size, calculation_type,
-                                                 dev_coef_value, use_threshold, threshold_value)
-                    res_dic[file_name].append(res)
-            print(time.time() - t0, "seconds wall time")
-        analysis_names = ReportManager.get_analysis_types(res_dic)
-        self.show_message(','.join(analysis_names), res_dic)
-        ReportManager.prepare_write_report(analysis_types=analysis_names, res_dic=res_dic)
-
-    def calc_cor_dim_wrapper(self, file_name, dimension, window_size, step_size):
-        radius = self.cor_dim_widget.get_radius()
-        tmp = CorDim()
-
-        try:
-            res = tmp.prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size)
-        except ValueError:
-            res = CorDimReport()
-            res.set_error("Error! For file {}".format(file_name))
-
-        return res
-
-    def calc_sampen_wrapper(self, file_name, dimension, window_size, step_size, calculation_type,
-                            dev_coef_value, use_threshold, threshold_value):
-        tmp = SampEn()
-        try:
-            res = tmp.prepare_calculate_window_sampen(m=dimension,
-                                                      file_name=file_name,
-                                                      calculation_type=calculation_type,
-                                                      dev_coef_value=dev_coef_value,
-                                                      use_threshold=use_threshold,
-                                                      threshold_value=threshold_value,
-                                                      window_size=window_size,
-                                                      step_size=step_size)
-        except ValueError:
-            res = SampEnReport()
-            res.set_error("Error! For file {}".format(file_name))
-        return res
-
-    def calc_apen_wrapper(self, file_name, dimension, window_size, step_size, calculation_type,
-                          dev_coef_value, use_threshold, threshold_value):
-        tmp = ApEn()
-        try:
-            res = tmp.prepare_calculate_window_apen(m=dimension,
-                                                    file_name=file_name,
-                                                    calculation_type=calculation_type,
-                                                    dev_coef_value=dev_coef_value,
-                                                    use_threshold=use_threshold,
-                                                    threshold_value=threshold_value,
-                                                    window_size=window_size,
-                                                    step_size=step_size)
-        except ValueError:
-            res = ApEnReport()
-            res.set_error("Error! For file {}".format(file_name))
-        return res
-
-    def show_message(self, source, res_dic):
+    def show_message(self, source, file_names):
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
         dialog.setText(
-                "{} calculated for: \n {}".format(source, "".join(["- {}, \n".format(i) for i in res_dic.keys()])))
+                "{} calculated for: \n {}".format(source, "".join(["- {}, \n".format(i) for i in file_names.split(',')])))
         dialog.show()
+
+    def set_in_progress(self, v):
+        self.is_in_progress = v
+        self.track_ui_progress(0)
+        self.check_run_button_state()
+
+    def erase_in_progress(self):
+        self.set_in_progress(False)
 
     def toggle_calc_ent_cb(self):
         self.is_calc_ent = not self.is_calc_ent
@@ -196,7 +158,8 @@ class ApEnWidget(QWidget):
         self.window_step_edit.setEnabled(self.is_windows_enabled)
 
     def check_run_button_state(self):
-        self.run_calculate.setEnabled((self.is_calc_ent or self.is_calc_cor_dim) and self.files_selected)
+        self.run_calculate.setEnabled((self.is_calc_ent or self.is_calc_cor_dim) and
+                                      self.files_selected and not self.is_in_progress)
 
     def toggle_calc_cor_dim_cb(self):
         self.is_calc_cor_dim = not self.is_calc_cor_dim
