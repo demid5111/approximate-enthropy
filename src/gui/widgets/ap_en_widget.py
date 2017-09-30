@@ -1,16 +1,16 @@
 import os
 
+import time
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QGridLayout, QLabel, QTextEdit, QCheckBox, \
     QLineEdit, QFileDialog, QMessageBox
 
-from src.core.report import CorDimReport, SampEnReport, ApEnReport
+from src.core.report import CorDimReport, SampEnReport, ApEnReport, ReportManager
 from src.gui.widgets.cor_dim_widget import CorDimWidget
 
 from src.core.apen import ApEn
 from src.core.cordim import CorDim
 from src.core.sampen import SampEn
 from src.gui.widgets.entropy_widget import EntropyWidget
-
 
 class ApEnWidget(QWidget):
     def __init__(self, parent):
@@ -48,7 +48,8 @@ class ApEnWidget(QWidget):
 
         file_chooser_group = QGridLayout()
         fileNamesLabel = QLabel("Files to analyze")
-        self.fileNamesEdit = QTextEdit()
+        self.fileNamesEdit = QTextEdit(
+                '/Users/demidovs/Documents/Projects/approximate-enthropy/data/ApEn_amolituda_2.txt')
 
         file_buttons_group = QVBoxLayout()
         file_buttons_group.addWidget(fileNamesOpen)
@@ -85,32 +86,6 @@ class ApEnWidget(QWidget):
         path = os.path.dirname(self.fileNamesEdit.toPlainText().split('\n')[0])
         with open(self.fileName, "w") as f:
             f.write(path + '/')
-
-    def config_ent_settings_grid(self):
-        cb = QCheckBox('Use threshold', self)
-        cb.setChecked(True)
-        self.is_threshold_used = True
-        cb.clicked.connect(self.toggle_threshold_checkbox)
-        self.rThreshold = QLineEdit("300")
-
-        window_cb = QCheckBox('Use windows', self)
-        window_cb.setChecked(True)
-        window_cb.clicked.connect(self.toggle_window_checkbox)
-        self.window_size_edit = QLineEdit("100")
-        self.window_step_edit = QLineEdit("10")
-        self.is_windows_enabled = True
-
-        rLabel = QLabel("r")
-
-        grid = QGridLayout()
-        grid.addWidget(cb, 0, 0)
-        grid.addWidget(self.rThreshold, 0, 1)
-        grid.addWidget(window_cb, 1, 0)
-        grid.addWidget(self.window_size_edit, 1, 1)
-        grid.addWidget(self.window_step_edit, 2, 1)
-        grid.addWidget(rLabel, 3, 0)
-
-        return grid
 
     def config_entropy_tab(self):
         mLabel = QLabel('m')
@@ -162,11 +137,12 @@ class ApEnWidget(QWidget):
 
         files_list = self.get_file_names()
         dimension = int(self.mEdit.text())
-        window_size = self.ent_widget.get_window_size()
-        step_size = self.ent_widget.get_step_size()
+        window_size = self.get_window_size()
+        step_size = self.get_step_size()
 
         res_dic = {}
         for file_name in files_list:
+            t0 = time.time()
             res_dic[file_name] = []
             if is_cord_dim_enabled:
                 res = self.calc_cor_dim_wrapper(file_name, dimension, window_size, step_size)
@@ -179,17 +155,17 @@ class ApEnWidget(QWidget):
 
                 if is_samp_en:
                     res = self.calc_sampen_wrapper(file_name, dimension, window_size, step_size, calculation_type,
-                            dev_coef_value, use_threshold, threshold_value)
+                                                   dev_coef_value, use_threshold, threshold_value)
                     res_dic[file_name].append(res)
 
                 if is_ap_en:
                     res = self.calc_apen_wrapper(file_name, dimension, window_size, step_size, calculation_type,
-                            dev_coef_value, use_threshold, threshold_value)
+                                                 dev_coef_value, use_threshold, threshold_value)
                     res_dic[file_name].append(res)
-
-        analysis_names = list(list(res_dic.keys())[0].keys())
+            print(time.time() - t0, "seconds wall time")
+        analysis_names = ReportManager.get_analysis_types(res_dic)
         self.show_message(','.join(analysis_names), res_dic)
-        make_report(res_dic=res_dic, analysis_types=analysis_names)
+        ReportManager.prepare_write_report(analysis_types=analysis_names, res_dic=res_dic)
 
     def calc_cor_dim_wrapper(self, file_name, dimension, window_size, step_size):
         radius = self.cor_dim_widget.get_radius()
@@ -221,17 +197,17 @@ class ApEnWidget(QWidget):
         return res
 
     def calc_apen_wrapper(self, file_name, dimension, window_size, step_size, calculation_type,
-                            dev_coef_value, use_threshold, threshold_value):
+                          dev_coef_value, use_threshold, threshold_value):
         tmp = ApEn()
         try:
             res = tmp.prepare_calculate_window_apen(m=dimension,
-                                                      file_name=file_name,
-                                                      calculation_type=calculation_type,
-                                                      dev_coef_value=dev_coef_value,
-                                                      use_threshold=use_threshold,
-                                                      threshold_value=threshold_value,
-                                                      window_size=window_size,
-                                                      step_size=step_size)
+                                                    file_name=file_name,
+                                                    calculation_type=calculation_type,
+                                                    dev_coef_value=dev_coef_value,
+                                                    use_threshold=use_threshold,
+                                                    threshold_value=threshold_value,
+                                                    window_size=window_size,
+                                                    step_size=step_size)
         except ValueError:
             res = ApEnReport()
             res.set_error("Error! For file {}".format(file_name))
@@ -274,49 +250,8 @@ class ApEnWidget(QWidget):
         use_threshold = self.ent_widget.is_threshold()
         return threshold_value, dev_coef_value, calculation_type, use_threshold
 
+    def get_window_size(self):
+        return int(self.window_size_edit.text()) if self.is_windows_enabled else 0
 
-def make_report(file_name="results/results.csv", res_dic=None, is_ap_en=True, analysis_types=()):
-    if not res_dic:
-        print("Error in generating report")
-    with open(file_name, "w") as f:
-        f.write('Analysis applied, {}\n'.format(','.join(analysis_types)))
-
-        # get sample size of window and step
-        any_key = list(res_dic.keys())[0]
-        f.write('Window size, {}\n'.format(ApEn.get_n_val(res_dic[any_key])))
-        f.write('Step size, {}\n'.format(ApEn.get_step_size_val(res_dic[any_key])))
-
-        column_names = ['File name', 'Window number', 'Entropy', 'R', 'Average RR']
-        f.write(','.join(column_names) + '\n')
-
-        # the biggest possible order
-        # file_name, window_index, ap_en_res, ap_en_avg_rr, samp_en_res, samp_en_avg_rr, cordim_radius
-
-        for file_name, reports in res_dic.items():
-            line_values = ['{}'.format(file_name),]
-            ap_en_values = []
-            samp_en_values = []
-            cor_dim_values = []
-            for report in reports:
-                if isinstance(report, ApEnReport):
-                    pass
-                elif isinstance(report, SampEnReport):
-                    pass
-                elif isinstance(report, CorDimReport):
-                    cor_dim_values = [report.get_radius(),]
-                # try:
-                #     ApEn.get_err_val(ind_result)
-                #     f.write(','.join([file_name, ApEn.get_err_val(ind_result)]) + '\n')
-                #     continue
-                # except KeyError:
-                #     pass
-                #
-                # for (window_index, res_val) in enumerate(ApEn.get_result_val(ind_result)):
-                #     res_list = ['{}'.format(file_name),  # empty for filename column
-                #                 str(window_index),
-                #                 str('{0:.10f}'.format(res_val)),
-                #                 str(ApEn.get_r_val(ind_result)[window_index]),
-                #                 str(ApEn.get_avg_rr_val(ind_result)[window_index])]
-            dump_string = ','.join(line_values)
-            f.write(dump_string + '\n')
-
+    def get_step_size(self):
+        return int(self.window_step_edit.text()) if self.is_windows_enabled else 0

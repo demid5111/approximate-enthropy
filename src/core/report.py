@@ -1,15 +1,33 @@
+from src.utils.supporting import AnalysisType
+import csv
+
 __author__ = 'demidovs'
 
 
 class IReport:
+    def __init__(self):
+        self.err_msg = None
+
     def set_window_size(self, w):
         self.window_size = w
+
+    def get_window_size(self):
+        return self.window_size
 
     def set_step_size(self, s):
         self.step_size = s
 
+    def get_step_size(self):
+        return self.step_size
+
     def set_result_values(self, s):
         self.result_values = s
+
+    def get_result_value(self, idx):
+        return self.result_values[idx]
+
+    def get_len_results(self):
+        return len(self.result_values)
 
     def set_dimension(self, d):
         self.dimension = d
@@ -17,26 +35,41 @@ class IReport:
     def set_error(self, msg):
         self.err_msg = msg
 
+    def is_error(self):
+        return bool(self.err_msg)
 
-class ApEnReport(IReport):
+
+class EnReport(IReport):
     def set_r_values(self, r_list):
         self.r_values = r_list
+
+    def get_r_value(self, idx):
+        return self.r_values[idx]
 
     def set_avg_rr(self, rr_list):
         self.avg_rr_values = rr_list
 
-    def get_prefix(self):
+    def get_avg_rr_value(self, idx):
+        return self.avg_rr_values[idx]
+
+    def get_report_list_per_window(self, window_idx):
+        if self.is_error():
+            return ['error', ] * 3
+        result = str('{0:.10f}'.format(self.get_result_value(window_idx)))
+        r = self.get_r_value(window_idx)
+        rr = self.get_avg_rr_value(window_idx)
+        return [str(result), str(r), str(rr)]
+
+
+class ApEnReport(EnReport):
+    @staticmethod
+    def get_prefix():
         return 'ap_en'
 
 
-class SampEnReport(IReport):
-    def set_r_values(self, r_list):
-        self.r_values = r_list
-
-    def set_avg_rr(self, rr_list):
-        self.avg_rr_values = rr_list
-
-    def get_prefix(self):
+class SampEnReport(EnReport):
+    @staticmethod
+    def get_prefix():
         return 'samp_en'
 
 
@@ -47,5 +80,109 @@ class CorDimReport(IReport):
     def get_radius(self):
         return self.r
 
-    def get_prefix(self):
+    @staticmethod
+    def get_prefix():
         return 'cor_dim'
+
+    def get_report_list_per_window(self, window_idx):
+        if self.is_error():
+            return ['error', ] * 2
+        result = str('{0:.10f}'.format(self.get_result_value(window_idx)))
+        radius = self.get_radius()
+        return [str(result), str(radius)]
+
+
+class ReportManager:
+    @staticmethod
+    def prepare_write_report(file_name="results/results.csv", res_dic=None, analysis_types=()):
+        if not res_dic:
+            print("Error in generating report")
+
+        header_lines = ReportManager.prepare_header(analysis_types, res_dic)
+
+        analysis_lines = []
+        for f_name, reports in res_dic.items():
+            analysis_lines.extend(ReportManager.prepare_analysis_report_single_file(f_name, reports))
+
+        ReportManager.write_report(file_name, header_lines, analysis_lines)
+
+    @staticmethod
+    def write_report(file_name="results/results.csv", header_lines=(), analysis_lines=()):
+        with open(file_name, 'w') as resultFile:
+            wr = csv.writer(resultFile, delimiter=',')
+            wr.writerows(header_lines)
+            wr.writerows(analysis_lines)
+
+    @staticmethod
+    def get_analysis_types(res_dic):
+        any_file = list(res_dic.keys())[0]
+        reports = res_dic[any_file]
+        analysis_names = []
+        for r in reports:
+            if isinstance(r, CorDimReport):
+                analysis_names.append(AnalysisType.COR_DIM)
+            if isinstance(r, ApEnReport):
+                analysis_names.append(AnalysisType.AP_EN)
+            if isinstance(r, SampEnReport):
+                analysis_names.append(AnalysisType.SAMP_EN)
+        return analysis_names
+
+    @staticmethod
+    def compile_column_names(analysis_types):
+        # need to prepare column names with prefixes of the particular type
+        # mandatory columns
+        column_names = ['File name', 'Window number']
+        en_column_names = ['Entropy', 'R', 'Average_RR']
+        if AnalysisType.AP_EN in analysis_types:
+            ap_en_names = ['{}_{}'.format(ApEnReport.get_prefix(), n) for n in en_column_names]
+            column_names.extend(ap_en_names)
+        if AnalysisType.SAMP_EN in analysis_types:
+            samp_en_names = ['{}_{}'.format(SampEnReport.get_prefix(), n) for n in en_column_names]
+            column_names.extend(samp_en_names)
+        if AnalysisType.COR_DIM in analysis_types:
+            cor_dim_column_names = ['Result', 'Radius']
+            cor_dim_names = ['{}_{}'.format(CorDimReport.get_prefix(), n) for n in cor_dim_column_names]
+            column_names.extend(cor_dim_names)
+        return column_names
+
+    @staticmethod
+    def prepare_header(analysis_types, res_dic):
+        header_lines = [
+            ['Analysis applied', *analysis_types],
+        ]
+        # get sample size of window and step
+        any_file = list(res_dic.keys())[0]
+        any_report = res_dic[any_file][0]
+        header_lines.append(['Window size', any_report.get_window_size()])
+        header_lines.append(['Step size', any_report.get_step_size()])
+
+        column_names = ReportManager.compile_column_names(analysis_types)
+        header_lines.append(column_names)
+        return header_lines
+
+    @staticmethod
+    def prepare_analysis_report_single_file(file_name, reports=()):
+        analysis_lines = []
+        for index in range(reports[0].get_len_results()):
+            line_values = ['{}'.format(file_name), str(index)]
+            ap_en_values = []
+            samp_en_values = []
+            cor_dim_values = []
+            for report in reports:
+                if isinstance(report, ApEnReport):
+                    ap_en_values = report.get_report_list_per_window(index)
+                elif isinstance(report, SampEnReport):
+                    samp_en_values = report.get_report_list_per_window(index)
+                elif isinstance(report, CorDimReport):
+                    cor_dim_values = report.get_report_list_per_window(index)
+            # the order is important
+            # the biggest possible order
+            # file_name, window_index,
+            # ap_en_res, ap_en_r, ap_en_avg_rr,
+            # samp_en_res, samp_en_r, samp_en_avg_rr,
+            # cordim_res, cordim_radius
+            line_values.extend(ap_en_values)
+            line_values.extend(samp_en_values)
+            line_values.extend(cor_dim_values)
+            analysis_lines.append(line_values)
+        return analysis_lines

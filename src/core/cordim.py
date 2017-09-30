@@ -25,7 +25,7 @@ class CorDim(ApEn):
         return cor_val / radius_val
 
     @staticmethod
-    def calculate_cor_dim(u_list):
+    def calculate_cor_dim(u_list, dimension, radius):
         portrait = CorDim.slice_intervals(dimension, u_list)
         res = CorDim.calc_cor_func(portrait, radius)
         return CorDim.calc_attractor(res, radius)
@@ -53,7 +53,7 @@ class CorDim(ApEn):
     def prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size):
         seq_list = CorDim.prepare_windows(file_name, window_size, step_size)
 
-        cordim_results = [CorDim.calculate_cor_dim(i) for i in seq_list]
+        cordim_results = [CorDim.calculate_cor_dim(i, dimension, radius) for i in seq_list]
 
         res_report = CorDimReport()
         res_report.set_radius(radius)

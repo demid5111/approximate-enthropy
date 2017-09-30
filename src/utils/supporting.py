@@ -3,3 +3,8 @@ class CalculationType:
     DEV = 2
     CONST = 1
 
+
+class AnalysisType:
+    AP_EN = 'ApEn'
+    SAMP_EN = 'SampEn'
+    COR_DIM = 'CorDim'

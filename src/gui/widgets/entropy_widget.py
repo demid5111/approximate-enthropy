@@ -102,12 +102,6 @@ class EntropyWidget(QWidget):
     def get_dev_coef_value(self):
         return float(self.rDevCoef.text()) if self.calculateR == CalculationType.DEV else -1
 
-    def get_window_size(self):
-        return int(self.window_size_edit.text()) if self.is_windows_enabled else 0
-
-    def get_step_size(self):
-        return int(self.window_step_edit.text()) if self.is_windows_enabled else 0
-
     def get_calculation_type(self):
         return self.calculateR
 
