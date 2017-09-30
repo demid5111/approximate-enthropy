@@ -3,7 +3,7 @@ import os
 from math import log, floor
 
 import src.utils.constants as constants
-from src.core.report import ApEnReport
+from src.core.report import SampEnReport
 
 from src.utils.supporting import CalculationType
 
@@ -126,7 +126,7 @@ class ApEn:
     def prepare_calculate_window_apen(m, file_name, calculation_type, dev_coef_value, use_threshold,
                                       threshold_value, window_size=None, step_size=None):
 
-        res_report = ApEnReport()
+        res_report = SampEnReport()
         try:
             seq_list, average_rr_list, r_val_list, window_size, step_size = ApEn.prepare_windows_calculation(m, file_name,
                                                                                                              calculation_type,
@@ -146,6 +146,7 @@ class ApEn:
         res_report.set_result_values(apen_results)
         res_report.set_r_values(r_val_list)
         res_report.set_dimension(m)
+        res_report.set_file_name(file_name)
 
         return res_report
 

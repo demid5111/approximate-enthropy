@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QThreadPool
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QGridLayout, QLabel, QCheckBox, \
     QLineEdit, QMessageBox, QProgressBar
 
@@ -116,6 +116,8 @@ class ApEnWidget(QWidget):
         en_threshold_value, en_dev_coef_value, en_calculation_type, en_use_threshold = (self.get_entropy_parameters()
                                                                                         if is_ent_enabled else [0, 0, 0,
                                                                                                                 0])
+
+
         self.calc_thread = CalculationThread(is_cord_dim_enabled, files_list, dimension,
                                              window_size, step_size,
                                              cor_dim_radius, is_samp_en, is_ap_en, en_use_threshold,

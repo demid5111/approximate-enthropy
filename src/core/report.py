@@ -32,6 +32,12 @@ class IReport:
     def set_dimension(self, d):
         self.dimension = d
 
+    def set_file_name(self, f):
+        self.file_name = f
+
+    def get_file_name(self):
+        return self.file_name
+
     def set_error(self, msg):
         self.err_msg = msg
 

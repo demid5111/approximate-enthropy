@@ -64,6 +64,7 @@ class CorDim(ApEn):
         res_report.set_step_size(step_size)
         res_report.set_result_values(cordim_results)
         res_report.set_dimension(dimension)
+        res_report.set_file_name(file_name)
 
         return res_report
 

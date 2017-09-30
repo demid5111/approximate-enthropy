@@ -1,12 +1,14 @@
+import math
 import time
 
-import math
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QThreadPool
 
 from src.core.apen import ApEn
-from src.core.cordim import CorDim
 from src.core.report import ReportManager
 from src.core.sampen import SampEn
+from src.gui.threads.workers.ApEnWorker import AEWorker
+from src.gui.threads.workers.CorDimWorker import CDWorker
+from src.gui.threads.workers.SampEnWorker import SEWorker
 
 
 class CalculationThread(QThread):
@@ -30,6 +32,10 @@ class CalculationThread(QThread):
         self.en_threshold_value = en_threshold_value
         self.en_dev_coef_value = en_dev_coef_value
         self.en_calculation_type = en_calculation_type
+        self.res_dic = {}
+
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
     def __del__(self):
         self.wait()
@@ -54,50 +60,46 @@ class CalculationThread(QThread):
             num_algos += 1
         if is_ap_en:
             num_algos += 1
-        full_job = len(files_list) * num_algos
+        self.full_job = len(files_list) * num_algos
 
-        job_index = 0
+        self.job_index = 0
         for file_name in files_list:
             t0 = time.time()
             res_dic[file_name] = []
             if is_cord_dim_enabled:
-                res = CorDim.prepare_calculate_window_cor_dim(file_name, dimension,
-                                                              cor_dim_radius, window_size, step_size)
-                res_dic[file_name].append(res)
-                job_index += 1
-                self.update_progress(full_job, job_index)
+                worker = CDWorker(file_name, dimension, cor_dim_radius, window_size, step_size)
+                self.threadpool.start(worker)
+                worker.signals.result.connect(self.receive_report)
 
             if is_samp_en:
-                res = SampEn.prepare_calculate_window_sampen(m=dimension,
-                                                             file_name=file_name,
-                                                             calculation_type=en_calculation_type,
-                                                             dev_coef_value=en_dev_coef_value,
-                                                             use_threshold=en_use_threshold,
-                                                             threshold_value=en_threshold_value,
-                                                             window_size=window_size,
-                                                             step_size=step_size)
-                res_dic[file_name].append(res)
-                job_index += 1
-                self.update_progress(full_job, job_index)
+                worker = SEWorker(dimension, file_name, en_calculation_type, en_dev_coef_value,
+                                  en_use_threshold, en_threshold_value, window_size, step_size)
+                self.threadpool.start(worker)
+                worker.signals.result.connect(self.receive_report)
 
             if is_ap_en:
-                res = ApEn.prepare_calculate_window_apen(m=dimension,
-                                                         file_name=file_name,
-                                                         calculation_type=en_calculation_type,
-                                                         dev_coef_value=en_dev_coef_value,
-                                                         use_threshold=en_use_threshold,
-                                                         threshold_value=en_threshold_value,
-                                                         window_size=window_size,
-                                                         step_size=step_size)
-                res_dic[file_name].append(res)
-                job_index += 1
-                self.update_progress(full_job, job_index)
+                worker = AEWorker(dimension, file_name, en_calculation_type, en_dev_coef_value,
+                                  en_use_threshold, en_threshold_value, window_size, step_size)
+                self.threadpool.start(worker)
+                worker.signals.result.connect(self.receive_report)
 
             print(time.time() - t0, "seconds per single file")
-        analysis_names = ReportManager.get_analysis_types(res_dic)
-        self.done.emit(','.join(analysis_names), ','.join(list(res_dic.keys())))
-        ReportManager.prepare_write_report(analysis_types=analysis_names, res_dic=res_dic)
+
+        self.threadpool.waitForDone()
+        self.job_index = -1
+        self.full_job = -1
+        analysis_names = ReportManager.get_analysis_types(self.res_dic)
+        self.done.emit(','.join(analysis_names), ','.join(list(self.res_dic.keys())))
+        ReportManager.prepare_write_report(analysis_types=analysis_names, res_dic=self.res_dic)
 
     def update_progress(self, full, current):
         progress = math.ceil((current / full) * 100)
         self.progress.emit(progress)
+
+    def receive_report(self, report):
+        try:
+            self.res_dic[report.get_file_name()].append(report)
+        except KeyError:
+            self.res_dic[report.get_file_name()] = [report,]
+        self.job_index += 1
+        self.update_progress(self.full_job, self.job_index)

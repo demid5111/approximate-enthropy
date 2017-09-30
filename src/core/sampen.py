@@ -66,6 +66,7 @@ class SampEn(ApEn):
         res_report.set_step_size(step_size)
         res_report.set_result_values(sampen_results)
         res_report.set_r_values(r_val_list)
+        res_report.set_file_name(file_name)
 
         return res_report
 
