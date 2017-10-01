@@ -3,7 +3,7 @@ import os
 from math import log, floor
 
 import src.utils.constants as constants
-from src.core.report import SampEnReport, ApEnReport
+from src.core.report import ApEnReport
 
 from src.utils.supporting import CalculationType
 
@@ -26,30 +26,6 @@ class ApEn:
     @staticmethod
     def slice_intervals(m, seq):
         return [seq[i:i + m] for i in range(len(seq) - m + 1)]
-
-    @staticmethod
-    def get_result_val(d):
-        return d['result']
-
-    @staticmethod
-    def get_avg_rr_val(d):
-        return d['average_rr']
-
-    @staticmethod
-    def get_r_val(d):
-        return d['r']
-
-    @staticmethod
-    def get_n_val(d):
-        return d['n']
-
-    @staticmethod
-    def get_step_size_val(d):
-        return d['step_size']
-
-    @staticmethod
-    def get_err_val(d):
-        return d['error']
 
     @staticmethod
     def get_average_rr(seq):
