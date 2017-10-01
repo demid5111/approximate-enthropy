@@ -21,6 +21,7 @@ class EntropyWidget(QWidget):
         self.rDev.clicked.connect(self.set_dev_r)
         self.rDevCoef = QLineEdit("0.5")
         self.rDevCoef.setEnabled(False)
+        self.rDevCoef.setFixedWidth(40)
         dev_coef_group.addWidget(self.rDev)
         dev_coef_group.addWidget(self.rDevCoef)
         number_group.addLayout(dev_coef_group)

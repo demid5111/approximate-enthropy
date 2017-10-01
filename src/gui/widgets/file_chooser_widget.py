@@ -22,8 +22,7 @@ class FileChooserWidget(QWidget):
 
         file_chooser_group = QGridLayout()
         fileNamesLabel = QLabel("Files to analyze")
-        self.file_names_edit = QTextEdit(
-                '/Users/demidovs/Documents/Projects/approximate-enthropy/data/ApEn_amolituda_2.txt')
+        self.file_names_edit = QTextEdit('')
 
         file_buttons_group = QVBoxLayout()
         file_buttons_group.addWidget(fileNamesOpen)

@@ -1,4 +1,3 @@
-from PyQt5.QtCore import pyqtSlot, QThreadPool
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QGridLayout, QLabel, QCheckBox, \
     QLineEdit, QMessageBox, QProgressBar
 
@@ -13,7 +12,7 @@ class ApEnWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.fileName = ".memory"
-        self.files_selected = True  # represent if FileChooserWidget has any files selected
+        self.files_selected = False  # represent if FileChooserWidget has any files selected
         self.is_in_progress = False  # represent if calculation is in progress
         self.init_ui()
 
@@ -97,9 +96,11 @@ class ApEnWidget(QWidget):
 
     def on_new_files_chosen(self):
         self.files_selected = True
+        self.check_run_button_state()
 
     def on_erased_files(self):
         self.files_selected = False
+        self.check_run_button_state()
 
     def calculate(self):
         is_ent_enabled = self.is_use_ent_cb
@@ -116,7 +117,6 @@ class ApEnWidget(QWidget):
         en_threshold_value, en_dev_coef_value, en_calculation_type, en_use_threshold = (self.get_entropy_parameters()
                                                                                         if is_ent_enabled else [0, 0, 0,
                                                                                                                 0])
-
 
         self.calc_thread = CalculationThread(is_cord_dim_enabled, files_list, dimension,
                                              window_size, step_size,

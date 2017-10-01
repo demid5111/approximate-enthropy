@@ -10,15 +10,15 @@ class App(QMainWindow):
         super().__init__()
         self.title = 'HeartAlgo-Analyzer'
         self.left = 400
-        self.top = 200
-        self.width = 400
-        self.height = 500
+        self.top = 100
+        self.width = 500
+        self.height = 600
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         self.table_widget = ApEnWidget(self)
         self.setCentralWidget(self.table_widget)
-
+        self.resize(self.width, self.height)
         self.show()
 
 
