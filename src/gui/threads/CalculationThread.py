@@ -1,7 +1,6 @@
 import math
-import time
 
-from PyQt5.QtCore import QThread, pyqtSignal, QThreadPool
+from PyQt5.QtCore import QThread, pyqtSignal, QThreadPool, QMutex
 
 from src.core.apen import ApEn
 from src.core.cordim import CorDim
@@ -31,8 +30,9 @@ class CalculationThread(QThread):
         self.en_threshold_value = en_threshold_value
         self.en_dev_coef_value = en_dev_coef_value
         self.en_calculation_type = en_calculation_type
-        self.res_dic = {}
 
+        self.res_dic = {}
+        self.mutex = QMutex()
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
@@ -68,7 +68,7 @@ class CalculationThread(QThread):
                 worker.signals.result.connect(self.receive_report)
 
             if is_samp_en:
-                worker = GeneralWorker(SampEn.prepare_calculate_window_apen,
+                worker = GeneralWorker(SampEn.prepare_calculate_window_sampen,
                                        dimension, file_name, en_calculation_type, en_dev_coef_value,
                                        en_use_threshold, en_threshold_value, window_size, step_size)
                 self.threadpool.start(worker)
@@ -80,7 +80,6 @@ class CalculationThread(QThread):
                                        en_use_threshold, en_threshold_value, window_size, step_size)
                 self.threadpool.start(worker)
                 worker.signals.result.connect(self.receive_report)
-
 
         self.threadpool.waitForDone()
         self.job_index = -1
@@ -94,9 +93,13 @@ class CalculationThread(QThread):
         self.progress.emit(progress)
 
     def receive_report(self, report):
+        self.mutex.lock()
         try:
             self.res_dic[report.get_file_name()].append(report)
         except KeyError:
             self.res_dic[report.get_file_name()] = [report, ]
+
         self.job_index += 1
         self.update_progress(self.full_job, self.job_index)
+        self.mutex.unlock()
+

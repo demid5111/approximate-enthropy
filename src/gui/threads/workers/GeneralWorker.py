@@ -1,6 +1,7 @@
+import json
+import time
 from PyQt5.QtCore import QRunnable, pyqtSlot
 
-from src.core.apen import ApEn
 from src.gui.threads.workers.WorkerSignals import WorkerSignals
 
 

@@ -7,6 +7,7 @@ __author__ = 'demidovs'
 class IReport:
     def __init__(self):
         self.err_msg = None
+        self.prefix = ''
 
     def set_window_size(self, w):
         self.window_size = w
@@ -31,6 +32,9 @@ class IReport:
 
     def set_dimension(self, d):
         self.dimension = d
+
+    def get_dimension(self):
+        return self.dimension
 
     def set_file_name(self, f):
         self.file_name = f
@@ -68,27 +72,33 @@ class EnReport(IReport):
 
 
 class ApEnReport(EnReport):
+    prefix = 'ap_en'
+
     @staticmethod
     def get_prefix():
-        return 'ap_en'
+        return ApEnReport.prefix
 
 
 class SampEnReport(EnReport):
+    prefix = 'samp_en'
+
     @staticmethod
     def get_prefix():
-        return 'samp_en'
+        return SampEnReport.prefix
 
 
 class CorDimReport(IReport):
+    prefix = 'cor_dim'
+
+    @staticmethod
+    def get_prefix():
+        return CorDimReport.prefix
+
     def set_radius(self, r):
         self.r = r
 
     def get_radius(self):
         return self.r
-
-    @staticmethod
-    def get_prefix():
-        return 'cor_dim'
 
     def get_report_list_per_window(self, window_idx):
         if self.is_error():
@@ -159,6 +169,7 @@ class ReportManager:
         # get sample size of window and step
         any_file = list(res_dic.keys())[0]
         any_report = res_dic[any_file][0]
+        header_lines.append(['Dimension', any_report.get_dimension()])
         header_lines.append(['Window size', any_report.get_window_size()])
         header_lines.append(['Step size', any_report.get_step_size()])
 
@@ -169,7 +180,16 @@ class ReportManager:
     @staticmethod
     def prepare_analysis_report_single_file(file_name, reports=()):
         analysis_lines = []
-        for index in range(reports[0].get_len_results()):
+        # find not error-report
+        len_res = 1 # if all reports are with errors, iterate at least once to write error messages to file
+        for r in reports:
+            try:
+                len_res = r.get_len_results()
+                break
+            except AttributeError:
+                continue
+
+        for index in range(len_res):
             line_values = ['{}'.format(file_name), str(index)]
             ap_en_values = []
             samp_en_values = []
