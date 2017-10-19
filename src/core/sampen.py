@@ -49,8 +49,6 @@ class SampEn(ApEn):
                                         threshold_value, window_size=None, step_size=None):
         res_report = SampEnReport()
         res_report.set_file_name(file_name)
-        res_report.set_window_size(window_size)
-        res_report.set_step_size(step_size)
         res_report.set_dimension(m)
         try:
             seq_list, average_rr_list, r_val_list, window_size, step_size = SampEn.prepare_windows_calculation(m, file_name,
@@ -61,6 +59,8 @@ class SampEn(ApEn):
                                                                                                              window_size,
                                                                                                              step_size)
             sampen_results = [SampEn.calculate_sampen(m=m, seq=seq_list[i], r=r_val_list[i]) for i in range(len(seq_list))]
+            res_report.set_window_size(window_size)
+            res_report.set_step_size(step_size)
         except (ValueError, AssertionError):
             res_report.set_error("Error! For file {}".format(file_name))
             return res_report

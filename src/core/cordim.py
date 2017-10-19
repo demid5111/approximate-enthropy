@@ -47,19 +47,19 @@ class CorDim(ApEn):
             new_seq = u_list[current_step * step_size:next_max]
             seq_list.append(new_seq)
 
-        return seq_list
+        return seq_list, window_size, step_size
 
     @staticmethod
     def prepare_calculate_window_cor_dim(file_name, dimension, radius, window_size, step_size):
         res_report = CorDimReport()
         res_report.set_file_name(file_name)
-        res_report.set_window_size(window_size)
-        res_report.set_step_size(step_size)
         res_report.set_dimension(dimension)
 
         try:
-            seq_list = CorDim.prepare_windows(file_name, window_size, step_size)
+            seq_list, window_size, step_size = CorDim.prepare_windows(file_name, window_size, step_size)
             cordim_results = [CorDim.calculate_cor_dim(i, dimension, radius) for i in seq_list]
+            res_report.set_window_size(window_size)
+            res_report.set_step_size(step_size)
         except (ValueError, AssertionError):
             res_report.set_error("Error! For file {}".format(file_name))
             return res_report

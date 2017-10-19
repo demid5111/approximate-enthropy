@@ -1,3 +1,5 @@
+import json
+
 from src.utils.supporting import AnalysisType
 import csv
 
@@ -24,6 +26,9 @@ class IReport:
     def set_result_values(self, s):
         self.result_values = s
 
+    def get_result_values(self):
+        return self.result_values
+
     def get_result_value(self, idx):
         return self.result_values[idx]
 
@@ -48,6 +53,18 @@ class IReport:
     def is_error(self):
         return bool(self.err_msg)
 
+    def to_json(self):
+        return {
+            'file_name': self.get_file_name(),
+            'dimension': self.get_dimension(),
+            'window_step': self.get_step_size(),
+            'window_size': self.get_window_size(),
+            'result_values': self.get_result_values()
+        }
+
+    def __str__(self):
+        return json.dumps(self.to_json())
+
 
 class EnReport(IReport):
     def set_r_values(self, r_list):
@@ -56,11 +73,17 @@ class EnReport(IReport):
     def get_r_value(self, idx):
         return self.r_values[idx]
 
+    def get_r_values(self):
+        return self.r_values
+
     def set_avg_rr(self, rr_list):
         self.avg_rr_values = rr_list
 
     def get_avg_rr_value(self, idx):
         return self.avg_rr_values[idx]
+
+    def get_avg_rr_values(self):
+        return self.avg_rr_values
 
     def get_report_list_per_window(self, window_idx):
         if self.is_error():
@@ -69,6 +92,14 @@ class EnReport(IReport):
         r = self.get_r_value(window_idx)
         rr = self.get_avg_rr_value(window_idx)
         return [str(result), str(r), str(rr)]
+
+    def to_json(self):
+        if self.is_error():
+            return {'error': 'true'}
+        res_dic = super().to_json()
+        res_dic['r_values'] = self.get_r_values()
+        res_dic['avg_rr_values'] = self.get_avg_rr_values()
+        return res_dic
 
 
 class ApEnReport(EnReport):
@@ -106,6 +137,13 @@ class CorDimReport(IReport):
         result = str('{0:.10f}'.format(self.get_result_value(window_idx)))
         radius = self.get_radius()
         return [str(result), str(radius)]
+
+    def to_json(self):
+        if self.is_error():
+            return {'error': 'true'}
+        res_dic = super().to_json()
+        res_dic['radius'] = self.get_radius()
+        return res_dic
 
 
 class ReportManager:
@@ -181,7 +219,7 @@ class ReportManager:
     def prepare_analysis_report_single_file(file_name, reports=()):
         analysis_lines = []
         # find not error-report
-        len_res = 1 # if all reports are with errors, iterate at least once to write error messages to file
+        len_res = 1  # if all reports are with errors, iterate at least once to write error messages to file
         for r in reports:
             try:
                 len_res = r.get_len_results()
