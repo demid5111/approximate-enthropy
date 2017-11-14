@@ -6,6 +6,7 @@ from src.gui.widgets.cor_dim_widget import CorDimWidget
 
 from src.gui.widgets.entropy_widget import EntropyWidget
 from src.gui.widgets.file_chooser_widget import FileChooserWidget
+from src.gui.widgets.frac_dim_widget import FracDimWidget
 
 
 class ApEnWidget(QWidget):
@@ -59,6 +60,11 @@ class ApEnWidget(QWidget):
         self.is_use_cor_dim_cb.setChecked(self.is_calc_cor_dim)
         self.is_use_cor_dim_cb.clicked.connect(self.toggle_calc_cor_dim_cb)
 
+        self.is_use_frac_dim_cb = QCheckBox('Calculate frac dim?', self)
+        self.is_calc_frac_dim = True
+        self.is_use_frac_dim_cb.setChecked(self.is_calc_cor_dim)
+        self.is_use_frac_dim_cb.clicked.connect(self.toggle_calc_frac_dim_cb)
+
         self.run_calculate = QPushButton("Run calculation", self)
         self.run_calculate.clicked.connect(self.calculate)
 
@@ -70,17 +76,21 @@ class ApEnWidget(QWidget):
         grid.addWidget(self.window_step_edit, 2, 1)
         grid.addWidget(self.is_use_ent_cb, 3, 0)
         grid.addWidget(self.ent_widget, 4, 1)
-        grid.addWidget(self.is_use_cor_dim_cb, 5, 0)
 
         self.cor_dim_widget = CorDimWidget(self)
+        grid.addWidget(self.is_use_cor_dim_cb, 5, 0)
         grid.addWidget(self.cor_dim_widget, 6, 1)
+
+        self.frac_dim_widget = FracDimWidget(self)
+        grid.addWidget(self.is_use_frac_dim_cb, 7, 0)
+        grid.addWidget(self.frac_dim_widget, 8, 1)
 
         self.file_chooser_widget = FileChooserWidget(self, self.fileName)
         self.file_chooser_widget.new_files_chosen.connect(self.on_new_files_chosen)
         self.file_chooser_widget.erased_files.connect(self.on_erased_files)
-        grid.addWidget(self.file_chooser_widget, 7, 0, 1, 3)
+        grid.addWidget(self.file_chooser_widget, 9, 0, 1, 3)
 
-        grid.addWidget(self.run_calculate, 10, 0, 1, 3)
+        grid.addWidget(self.run_calculate, 12, 0, 1, 3)
 
         # Creating a label
         self.progress_label = QLabel('Calculation progress', self)
@@ -89,8 +99,8 @@ class ApEnWidget(QWidget):
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setMaximum(100)
         self.progress_bar.setMinimum(0)
-        grid.addWidget(self.progress_label, 14, 0)
-        grid.addWidget(self.progress_bar, 14, 1)
+        grid.addWidget(self.progress_label, 16, 0)
+        grid.addWidget(self.progress_bar, 16, 1)
 
         return grid
 
@@ -103,8 +113,9 @@ class ApEnWidget(QWidget):
         self.check_run_button_state()
 
     def calculate(self):
-        is_ent_enabled = self.is_use_ent_cb
-        is_cord_dim_enabled = self.is_use_cor_dim_cb
+        is_ent_enabled = self.is_use_ent_cb.isChecked()
+        is_cord_dim_enabled = self.is_use_cor_dim_cb.isChecked()
+        is_frac_dim_enabled = self.is_use_frac_dim_cb.isChecked()
 
         files_list = self.file_chooser_widget.get_file_names()
         dimension = int(self.mEdit.text())
@@ -117,11 +128,13 @@ class ApEnWidget(QWidget):
         en_threshold_value, en_dev_coef_value, en_calculation_type, en_use_threshold = (self.get_entropy_parameters()
                                                                                         if is_ent_enabled else [0, 0, 0,
                                                                                                                 0])
+        fd_max_k = self.get_frac_dim_parameters() if is_frac_dim_enabled else 0
 
         self.calc_thread = CalculationThread(is_cord_dim_enabled, files_list, dimension,
                                              window_size, step_size,
                                              cor_dim_radius, is_samp_en, is_ap_en, en_use_threshold,
-                                             en_threshold_value, en_dev_coef_value, en_calculation_type)
+                                             en_threshold_value, en_dev_coef_value, en_calculation_type,
+                                             is_frac_dim_enabled, fd_max_k)
 
         self.set_in_progress(True)
         self.calc_thread.done.connect(self.show_message)
@@ -160,7 +173,7 @@ class ApEnWidget(QWidget):
         self.window_step_edit.setEnabled(self.is_windows_enabled)
 
     def check_run_button_state(self):
-        self.run_calculate.setEnabled((self.is_calc_ent or self.is_calc_cor_dim) and
+        self.run_calculate.setEnabled((self.is_calc_ent or self.is_calc_cor_dim or self.is_calc_frac_dim) and
                                       self.files_selected and not self.is_in_progress)
 
     def toggle_calc_cor_dim_cb(self):
@@ -168,12 +181,21 @@ class ApEnWidget(QWidget):
         self.check_run_button_state()
         self.cor_dim_widget.setHidden(not self.is_calc_cor_dim)
 
+    def toggle_calc_frac_dim_cb(self):
+        self.is_calc_frac_dim = not self.is_calc_frac_dim
+        self.check_run_button_state()
+        self.frac_dim_widget.setHidden(not self.is_calc_frac_dim)
+
     def get_entropy_parameters(self):
         threshold_value = self.ent_widget.get_threshold()
         dev_coef_value = self.ent_widget.get_dev_coef_value()
         calculation_type = self.ent_widget.get_calculation_type()
         use_threshold = self.ent_widget.is_threshold()
         return threshold_value, dev_coef_value, calculation_type, use_threshold
+
+    def get_frac_dim_parameters(self):
+        fd_max_k = self.frac_dim_widget.get_max_k()
+        return fd_max_k
 
     def get_window_size(self):
         return int(self.window_size_edit.text()) if self.is_windows_enabled else 0

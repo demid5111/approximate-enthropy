@@ -10,6 +10,7 @@ class IReport:
     def __init__(self):
         self.err_msg = None
         self.prefix = ''
+        self.dimension = 'NONE'
 
     def set_window_size(self, w):
         self.window_size = w
@@ -146,6 +147,34 @@ class CorDimReport(IReport):
         return res_dic
 
 
+class FracDimReport(IReport):
+    prefix = 'frac_dim'
+
+    @staticmethod
+    def get_prefix():
+        return FracDimReport.prefix
+
+    def set_max_k(self, k):
+        self.max_k = k
+
+    def get_max_k(self):
+        return self.max_k
+
+    def get_report_list_per_window(self, window_idx):
+        if self.is_error():
+            return ['error', ] * 2
+        result = str('{0:.10f}'.format(self.get_result_value(window_idx)))
+        max_k = self.get_max_k()
+        return [str(result), str(max_k)]
+
+    def to_json(self):
+        if self.is_error():
+            return {'error': 'true'}
+        res_dic = super().to_json()
+        res_dic['max_k'] = self.get_max_k()
+        return res_dic
+
+
 class ReportManager:
     @staticmethod
     def prepare_write_report(file_name="results/results.csv", res_dic=None, analysis_types=()):
@@ -175,6 +204,8 @@ class ReportManager:
         for r in reports:
             if isinstance(r, CorDimReport):
                 analysis_names.append(AnalysisType.COR_DIM)
+            if isinstance(r, FracDimReport):
+                analysis_names.append(AnalysisType.FRAC_DIM)
             if isinstance(r, ApEnReport):
                 analysis_names.append(AnalysisType.AP_EN)
             if isinstance(r, SampEnReport):
@@ -197,6 +228,10 @@ class ReportManager:
             cor_dim_column_names = ['Result', 'Radius']
             cor_dim_names = ['{}_{}'.format(CorDimReport.get_prefix(), n) for n in cor_dim_column_names]
             column_names.extend(cor_dim_names)
+        if AnalysisType.FRAC_DIM in analysis_types:
+            frac_dim_column_names = ['Result', 'Max_K']
+            frac_dim_names = ['{}_{}'.format(FracDimReport.get_prefix(), n) for n in frac_dim_column_names]
+            column_names.extend(frac_dim_names)
         return column_names
 
     @staticmethod
@@ -232,6 +267,7 @@ class ReportManager:
             ap_en_values = []
             samp_en_values = []
             cor_dim_values = []
+            frac_dim_values = []
             for report in reports:
                 if isinstance(report, ApEnReport):
                     ap_en_values = report.get_report_list_per_window(index)
@@ -239,14 +275,18 @@ class ReportManager:
                     samp_en_values = report.get_report_list_per_window(index)
                 elif isinstance(report, CorDimReport):
                     cor_dim_values = report.get_report_list_per_window(index)
+                elif isinstance(report, FracDimReport):
+                    frac_dim_values = report.get_report_list_per_window(index)
             # the order is important
             # the biggest possible order
             # file_name, window_index,
             # ap_en_res, ap_en_r, ap_en_avg_rr,
             # samp_en_res, samp_en_r, samp_en_avg_rr,
-            # cordim_res, cordim_radius
+            # cordim_res, cordim_radius,
+            # fracdim_res, fracdim_start, fracdim_interval, fracdim_max_k, fracdim_max_m
             line_values.extend(ap_en_values)
             line_values.extend(samp_en_values)
             line_values.extend(cor_dim_values)
+            line_values.extend(frac_dim_values)
             analysis_lines.append(line_values)
         return analysis_lines

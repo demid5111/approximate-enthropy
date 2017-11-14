@@ -8,3 +8,4 @@ class AnalysisType:
     AP_EN = 'ApEn'
     SAMP_EN = 'SampEn'
     COR_DIM = 'CorDim'
+    FRAC_DIM = 'FracDim'
