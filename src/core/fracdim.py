@@ -122,5 +122,5 @@ if __name__ == '__main__':
     old_seq = [i for i in range(100)]
     print(old_seq)
 
-    sl = FracDim.calculate_higuchi(old_seq, initial_time, interval_time, 20, 20)
+    sl = FracDim.calculate_higuchi(old_seq, 20)
     print(sl)
