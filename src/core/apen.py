@@ -16,7 +16,10 @@ class ApEn:
         u_list = []
         with open(file_name, "r") as f:
             for val in f.readlines():
-                u_list.append(float(val.strip().replace(',', '.')))
+                val = val.strip().replace(',', '.')
+                if not val:
+                    continue
+                u_list.append(float(val))
         assert u_list, 'File is either missed or corrupted'
         if use_threshold:
             assert len(u_list) >= threshold_value, \
