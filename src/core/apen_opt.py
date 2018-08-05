@@ -52,6 +52,10 @@ class ApEnOpt:
         return np.mean(x, axis=axis)
 
     @staticmethod
+    def is_dissimilar_pair(a, b, threshold):
+        return np.abs(a - b) > threshold
+
+    @staticmethod
     def calculate_distances(calculation_type, deviations, dev_coef_value, windows):
         return fromiter_indexed(deviations,
                                 lambda idx, dev: ApEnOpt.calculate_r(calculation_type, dev, dev_coef_value,
@@ -68,14 +72,18 @@ class ApEnOpt:
     def calculate_c(seq, r):
         number_vectors = len(seq)
         c = np.ones((number_vectors, ), dtype=np.int64)
+        # sums = np.sum(seq, axis=1)
         # assuming that we have the step equals one for building sequences of vectors
         # from the original series, we always know the number of vectors for m=m+1
         c_next = np.ones((number_vectors-1,), dtype=np.int64)
+        deduced_m = seq[0].shape[0]
         assert r >= 0, "Filtering threshold should be positive"
         for i in range(number_vectors):
             for j in range(i+1, number_vectors):
-                if j == len(seq):
-                    break
+                # if ApEnOpt.is_dissimilar_pair(sums[i], sums[j], deduced_m * r):
+                #     # not needed for further analysis - the difference is bigger than
+                #     # upper bound and we skip this pair
+                #     continue
                 if r >= ApEnOpt.calculate_distance(seq[i], seq[j]):
                     c[i] += 1
                     c[j] += 1
