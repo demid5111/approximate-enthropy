@@ -1,3 +1,24 @@
+"""
+Optimized calculation of the ApEn.
+
+Algorithm is well described here: http://www.mdpi.com/1099-4300/20/1/61
+
+@article{manis2018low,
+  title={Low Computational Cost for Sample Entropy},
+  author={Manis, George and Aktaruzzaman, Md and Sassi, Roberto},
+  journal={Entropy},
+  volume={20},
+  number={1},
+  pages={61},
+  year={2018},
+  publisher={Multidisciplinary Digital Publishing Institute}
+}
+
+In particular, we have taken the bucket-based one, as it performs well on the signals of small (<1000) length
+
+We see 3.9x speedup compared to the naive implementation
+"""
+
 import operator
 import os
 import numpy as np
@@ -69,34 +90,85 @@ class ApEnOpt:
             return (-0.036 + 0.26 * (sdds_deviation / deviation) ** (1 / 2)) / ((len_seq / 1000) ** (1 / 4))
 
     @staticmethod
-    def calculate_c(seq, r):
+    def normalize_by_min(vecs):
+        return vecs - np.min(vecs)
+
+    @staticmethod
+    def fill_buckets(sums, r, split_factor, buckets_number):
+        # compared to the paper, our buckets are intended to contain indexes
+        buckets = [[] for _ in range(buckets_number)]
+        indexer = ApEnOpt.bucket_index(sums, r, split_factor)
+        for idx, val in np.ndenumerate(indexer):
+            i = idx[0]
+            value = val - 1
+            buckets[value].append(i)
+        return buckets
+
+    @staticmethod
+    def bucket_index(point, r, split_factor):
+        return np.ceil(point / r / split_factor).astype('int')
+
+    @staticmethod
+    def sort_inside_buckets(buckets, seq):
+        return [sorted(b, key=lambda idx: seq[idx][0]) for b in buckets]
+
+    @staticmethod
+    def is_similar(vec1, vec2, threshold):
+        for idx, val in np.ndenumerate(vec1):
+            if np.abs(val - vec2[idx]) > threshold:
+                return False
+        return True
+
+    @staticmethod
+    def collect_with_first_diff_less_than(val, threshold, bucket, seq):
+        first = next((idx for idx, i in enumerate(bucket) if abs(seq[i][0] - val) <= threshold), None)
+        if first is None:
+            return []
+        second = next((idx for idx, i in enumerate(bucket) if abs(seq[i][0] - val) > threshold and idx > first), None)
+        return bucket[first:second]
+
+    @staticmethod
+    def calculate_c(seq, r, split_factor):
+        assert r >= 0, "Filtering threshold should be positive"
         number_vectors = len(seq)
-        c = np.ones((number_vectors, ), dtype=np.int64)
-        # sums = np.sum(seq, axis=1)
+        c = np.ones((number_vectors,), dtype=np.int64)
         # assuming that we have the step equals one for building sequences of vectors
         # from the original series, we always know the number of vectors for m=m+1
-        c_next = np.ones((number_vectors-1,), dtype=np.int64)
+        c_next = np.ones((number_vectors - 1,), dtype=np.int64)
+
+        sums = np.sum(seq, axis=1)
+        sums_normalized = ApEnOpt.normalize_by_min(sums)
+        buckets_number = ApEnOpt.bucket_index(np.max(sums_normalized), r, split_factor)
+        buckets = ApEnOpt.fill_buckets(sums_normalized, r, split_factor, buckets_number)
+        buckets_sorted = ApEnOpt.sort_inside_buckets(buckets, seq)
         deduced_m = seq[0].shape[0]
-        assert r >= 0, "Filtering threshold should be positive"
-        for i in range(number_vectors):
-            for j in range(i+1, number_vectors):
-                # if ApEnOpt.is_dissimilar_pair(sums[i], sums[j], deduced_m * r):
-                #     # not needed for further analysis - the difference is bigger than
-                #     # upper bound and we skip this pair
-                #     continue
-                if r >= ApEnOpt.calculate_distance(seq[i], seq[j]):
-                    c[i] += 1
-                    c[j] += 1
-                    # assuming that we have the step equals one
-                    # and overall seq=[1,2,3,4,5,6,7,8]
-                    # and for m=2 we have i=[1,2,3] compared to j=[5,6,7]
-                    # and we want to check for m=3, we can take first values from next
-                    # vectors: next(i)=[2,3,4], next(j)=[6,7,8]
-                    if j != len(seq) - 1 and r >= ApEnOpt.calculate_distance(seq[i+1][-1:], seq[j+1][-1:]):
-                        c_next[i] += 1
-                        c_next[j] += 1
-        c_avg = c/number_vectors
-        c_next_avg = c_next/(number_vectors-1)
+        for i_b in range(buckets_number):
+            for idx, i in enumerate(buckets_sorted[i_b]):
+                # compare within the bucket where the original vector is placed
+                # to_compare_with = buckets_sorted[i_b][idx + 1:]
+                to_compare_with = ApEnOpt.collect_with_first_diff_less_than(seq[i][0], r, buckets_sorted[i_b][idx + 1:],
+                                                                            seq)
+                # then compare within neighbours
+                for j_b in range(max(0, i_b - deduced_m * split_factor), i_b):
+                    # to_compare_with.extend(buckets_sorted[j_b])
+                    to_compare_with.extend(
+                        ApEnOpt.collect_with_first_diff_less_than(seq[i][0], r, buckets_sorted[j_b], seq))
+                for j in to_compare_with:
+                    if ApEnOpt.is_similar(seq[i], seq[j], r):
+                        c[i] += 1
+                        c[j] += 1
+                        # assuming that we have the step equals one
+                        # and overall seq=[1,2,3,4,5,6,7,8]
+                        # and for m=2 we have i=[1,2,3] compared to j=[5,6,7]
+                        # and we want to check for m=3, we can take first values from next
+                        # vectors: next(i)=[2,3,4], next(j)=[6,7,8]
+                        if (j != len(seq) - 1 and
+                                i != len(seq) - 1 and
+                                r >= ApEnOpt.calculate_distance(seq[i + 1][-1:], seq[j + 1][-1:])):
+                            c_next[i] += 1
+                            c_next[j] += 1
+        c_avg = c / number_vectors
+        c_next_avg = c_next / (number_vectors - 1)
         return c_avg, c_next_avg
 
     @staticmethod
@@ -112,7 +184,7 @@ class ApEnOpt:
     @staticmethod
     def calculate_apen(m, seq, r):
         step = 1
-        m_next = m+1
+        m_next = m + 1
 
         # 3. Form a sequence of vectors so that
         # x[i] = [u[i],u[i+1],...,u[i+m-1]]
@@ -125,7 +197,7 @@ class ApEnOpt:
         # 4. Construct the C(i,m) - portion of vectors "similar" to i-th
         # similarity - d[x(j),x(i)], where d = max(a)|u(a)-u*(a)|
         # this is just the respective values subtraction
-        c_avg, c_avg_next = ApEnOpt.calculate_c(m_sliced, r)
+        c_avg, c_avg_next = ApEnOpt.calculate_c(m_sliced, r, split_factor=15)
 
         phi, phi_next = ApEnOpt.calculate_phi(c_avg, c_avg_next)
 

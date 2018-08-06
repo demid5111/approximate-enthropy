@@ -225,34 +225,27 @@ class TestOptimization(unittest.TestCase):
             [20, 25],
             [25, 30]
         ])
-        for_m_3 = np.array([
-            [10, 20, 25],
-            [20, 25, 15],
-            [25, 15, 20],
-            [15, 20, 25],
-            [20, 25, 30]
-        ])
 
         exp_for_m_2 = np.array([
-            (1+1)/6, # (10, 20) is close to himself, (15, 20)
-            (1+1+1+1)/6, # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
-            (1+0)/6, # (25, 15) is close to himself
-            (1+1+1+1)/6, # (15, 20) is close to himself, (10,20), (20, 25), (20, 25)
-            (1+1+1+1)/6, # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
-            (1+1+1)/6, # (25, 30) is close to himself, (20, 25), (20, 25)
+            (1 + 1) / 6,  # (10, 20) is close to himself, (15, 20)
+            (1 + 1 + 1 + 1) / 6,  # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
+            (1 + 0) / 6,  # (25, 15) is close to himself
+            (1 + 1 + 1 + 1) / 6,  # (15, 20) is close to himself, (10,20), (20, 25), (20, 25)
+            (1 + 1 + 1 + 1) / 6,  # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
+            (1 + 1 + 1) / 6,  # (25, 30) is close to himself, (20, 25), (20, 25)
 
         ])
 
         exp_for_m_3 = np.array([
-            (1+1)/5, # (10, 20, 25) is close to himself, (15, 20, 25)
-            (1+0)/5, # (20, 25, 15) is close to himself
-            (1+0)/5, # (25, 15, 20) is close to himself
-            (1+1+1)/5, # (15, 20, 25) is close to himself, (10, 20, 25), (20, 25, 30)
-            (1+1)/5, # (20, 25, 30) is close to himself, (15, 20, 25)
+            (1 + 1) / 5,  # (10, 20, 25) is close to himself, (15, 20, 25)
+            (1 + 0) / 5,  # (20, 25, 15) is close to himself
+            (1 + 0) / 5,  # (25, 15, 20) is close to himself
+            (1 + 1 + 1) / 5,  # (15, 20, 25) is close to himself, (10, 20, 25), (20, 25, 30)
+            (1 + 1) / 5,  # (20, 25, 30) is close to himself, (15, 20, 25)
 
         ])
 
-        m_2, m_3 = self.apEn.calculate_c(for_m_2, 5)
+        m_2, m_3 = self.apEn.calculate_c(for_m_2, 5, split_factor=2)
         np.testing.assert_array_equal(m_2, exp_for_m_2)
         np.testing.assert_array_equal(m_3, exp_for_m_3)
 
