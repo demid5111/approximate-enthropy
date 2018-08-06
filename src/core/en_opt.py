@@ -74,7 +74,8 @@ class Entropy:
 
     @staticmethod
     def normalize_by_min(vecs):
-        return vecs - np.min(vecs)
+        # in order not to get zeros that later result in wrong bucket index
+        return (vecs - np.min(vecs)) + 0.0001
 
     @staticmethod
     def fill_buckets(sums, r, split_factor, buckets_number):
@@ -111,7 +112,7 @@ class Entropy:
         return bucket[first:second]
 
     @staticmethod
-    def calculate_c(seq, r, split_factor):
+    def calculate_similar_vectors(seq, r, split_factor):
         assert r >= 0, "Filtering threshold should be positive"
         number_vectors = len(seq)
         c = np.ones((number_vectors,), dtype=np.int64)
@@ -150,9 +151,7 @@ class Entropy:
                                 Entropy.is_similar(seq[i + 1][-1:], seq[j + 1][-1:], r)):
                             c_next[i] += 1
                             c_next[j] += 1
-        c_avg = c / number_vectors
-        c_next_avg = c_next / (number_vectors - 1)
-        return c_avg, c_next_avg
+        return c, c_next
 
     @staticmethod
     def prepare_windows_calculation(file_name, calculation_type, dev_coef_value, use_threshold,
@@ -171,7 +170,7 @@ class Entropy:
         return windows, averages, max_distances, window_size, step_size
 
     @staticmethod
-    def calculate_probabilities(m, seq, r):
+    def calculate_similarity(m, seq, r):
         step = 1
 
         # 3. Form a sequence of vectors so that
@@ -185,7 +184,7 @@ class Entropy:
         # 4. Construct the C(i,m) - portion of vectors "similar" to i-th
         # similarity - d[x(j),x(i)], where d = max(a)|u(a)-u*(a)|
         # this is just the respective values subtraction
-        return Entropy.calculate_c(m_sliced, r, split_factor=15)
+        return Entropy.calculate_similar_vectors(m_sliced, r, split_factor=15)
 
     @staticmethod
     def calculate(m, seq, r):

@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 import src.utils.constants as constants
-from src.core.apen_opt import ApEnOpt
+from src.core.apen_opt import ApproximateEntropy
 from src.core.en_opt import RCalculator
 
 from src.utils.supporting import CalculationType
@@ -13,7 +13,7 @@ from src.utils.supporting import CalculationType
 
 class TestApEnOptDeviation(unittest.TestCase):
     def setUp(self):
-        self.apEn = ApEnOpt()
+        self.apEn = ApproximateEntropy()
 
     def test_deviation1(self):
         u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
@@ -38,7 +38,7 @@ class TestApEnOptDeviation(unittest.TestCase):
 
 class TestApEnComplexRCalculation(unittest.TestCase):
     def setUp(self):
-        self.apEn = ApEnOpt()
+        self.apEn = ApproximateEntropy()
 
     def test_sdds1(self):
         u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
@@ -67,7 +67,7 @@ class TestApEnComplexRCalculation(unittest.TestCase):
 
 class TestApEnPrepareCalculateApEn(unittest.TestCase):
     def setUp(self):
-        self.apEn = ApEnOpt()
+        self.apEn = ApproximateEntropy()
 
     def test_prepare_calculate_const_r(self):
         deviation = 1.41185
@@ -87,7 +87,7 @@ class TestApEnPrepareCalculateApEn(unittest.TestCase):
         r = RCalculator.calculate_r(CalculationType.COMPLEX, deviation, 0.5, u_list)
         self.assertAlmostEqual(r, 0.29556, places=4, msg='incorrect r')
 
-    @patch('src.core.apen_opt.ApEnOpt.calculate')
+    @patch('src.core.apen_opt.ApproximateEntropy.calculate')
     @patch('src.core.en_opt.RCalculator.calculate_r')
     def test_prepare_calculate_r(self, mock_calculate_r, mock_calculate_apen):
         mock_calculate_r.return_value = 0.28237
@@ -111,7 +111,7 @@ class TestApEnPrepareCalculateApEn(unittest.TestCase):
 
 class TestApEnCalculateOverallApEn(unittest.TestCase):
     def setUp(self):
-        self.apEn = ApEnOpt()
+        self.apEn = ApproximateEntropy()
 
     def test_calculate_apen_2_const(self):
         r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'),
@@ -182,7 +182,7 @@ class TestApEnCalculateOverallApEn(unittest.TestCase):
 
 class TestApEnOptSlicing(unittest.TestCase):
     def setUp(self):
-        self.apEn = ApEnOpt()
+        self.apEn = ApproximateEntropy()
 
     def test_slicing_ideal(self):
         a = np.array([0, 1, 10, 11, 20, 21, 30, 31, 40, 41, 50, 51])
@@ -204,7 +204,7 @@ class TestApEnOptSlicing(unittest.TestCase):
 
 class TestOptimization(unittest.TestCase):
     def setUp(self):
-        self.apEn = ApEnOpt()
+        self.apEn = ApproximateEntropy()
 
     def test_calculate_c_ideal(self):
         for_m_2 = np.array([
@@ -217,25 +217,25 @@ class TestOptimization(unittest.TestCase):
         ])
 
         exp_for_m_2 = np.array([
-            (1 + 1) / 6,  # (10, 20) is close to himself, (15, 20)
-            (1 + 1 + 1 + 1) / 6,  # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
-            (1 + 0) / 6,  # (25, 15) is close to himself
-            (1 + 1 + 1 + 1) / 6,  # (15, 20) is close to himself, (10,20), (20, 25), (20, 25)
-            (1 + 1 + 1 + 1) / 6,  # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
-            (1 + 1 + 1) / 6,  # (25, 30) is close to himself, (20, 25), (20, 25)
+            (1 + 1),  # (10, 20) is close to himself, (15, 20)
+            (1 + 1 + 1 + 1),  # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
+            (1 + 0),  # (25, 15) is close to himself
+            (1 + 1 + 1 + 1),  # (15, 20) is close to himself, (10,20), (20, 25), (20, 25)
+            (1 + 1 + 1 + 1),  # (20, 25) is close to himself, (15, 20), (20, 25), (25, 30)
+            (1 + 1 + 1),  # (25, 30) is close to himself, (20, 25), (20, 25)
 
         ])
 
         exp_for_m_3 = np.array([
-            (1 + 1) / 5,  # (10, 20, 25) is close to himself, (15, 20, 25)
-            (1 + 0) / 5,  # (20, 25, 15) is close to himself
-            (1 + 0) / 5,  # (25, 15, 20) is close to himself
-            (1 + 1 + 1) / 5,  # (15, 20, 25) is close to himself, (10, 20, 25), (20, 25, 30)
-            (1 + 1) / 5,  # (20, 25, 30) is close to himself, (15, 20, 25)
+            (1 + 1),  # (10, 20, 25) is close to himself, (15, 20, 25)
+            (1 + 0),  # (20, 25, 15) is close to himself
+            (1 + 0),  # (25, 15, 20) is close to himself
+            (1 + 1 + 1),  # (15, 20, 25) is close to himself, (10, 20, 25), (20, 25, 30)
+            (1 + 1),  # (20, 25, 30) is close to himself, (15, 20, 25)
 
         ])
 
-        m_2, m_3 = self.apEn.calculate_c(for_m_2, 5, split_factor=2)
+        m_2, m_3 = self.apEn.calculate_similar_vectors(for_m_2, 5, split_factor=2)
         np.testing.assert_array_equal(m_2, exp_for_m_2)
         np.testing.assert_array_equal(m_3, exp_for_m_3)
 

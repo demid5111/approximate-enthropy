@@ -31,7 +31,7 @@ from src.utils.supporting import CalculationType
 __author__ = 'demidovs'
 
 
-class ApEnOpt(Entropy):
+class ApproximateEntropy(Entropy):
     report_cls = ApEnReport
 
     @staticmethod
@@ -46,15 +46,18 @@ class ApEnOpt(Entropy):
 
     @staticmethod
     def calculate(m, seq, r):
-        c_avg, c_avg_next = Entropy.calculate_probabilities(m, seq, r)
+        c, c_next = Entropy.calculate_similarity(m, seq, r)
+        number_vectors = len(seq)
+        c_avg = c / number_vectors
+        c_next_avg = c_next / (number_vectors - 1)
 
-        phi, phi_next = ApEnOpt.calculate_phi(c_avg, c_avg_next)
+        phi, phi_next = ApproximateEntropy.calculate_phi(c_avg, c_next_avg)
 
         return phi - phi_next
 
 
 if __name__ == "__main__":
-    apEn = ApEnOpt()
+    apEn = ApproximateEntropy()
 
     # calculate for multiple windows
     r3 = apEn.prepare_calculate_windowed(m=2,
