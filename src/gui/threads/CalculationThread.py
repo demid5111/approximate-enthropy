@@ -2,11 +2,11 @@ import math
 
 from PyQt5.QtCore import QThread, pyqtSignal, QThreadPool, QMutex
 
-from src.core.apen import ApEn
+from src.core.apen_opt import ApproximateEntropy
 from src.core.cordim import CorDim
 from src.core.fracdim import FracDim
 from src.core.report import ReportManager
-from src.core.sampen import SampEn
+from src.core.sampen_opt import SampleEntropy
 from src.gui.threads.workers.GeneralWorker import GeneralWorker
 
 
@@ -83,14 +83,14 @@ class CalculationThread(QThread):
                 worker.signals.result.connect(self.receive_report)
 
             if is_samp_en:
-                worker = GeneralWorker(SampEn.prepare_calculate_window_sampen,
+                worker = GeneralWorker(SampleEntropy.prepare_calculate_windowed,
                                        dimension, file_name, en_calculation_type, en_dev_coef_value,
                                        en_use_threshold, en_threshold_value, window_size, step_size)
                 self.threadpool.start(worker)
                 worker.signals.result.connect(self.receive_report)
 
             if is_ap_en:
-                worker = GeneralWorker(ApEn.prepare_calculate_window_apen,
+                worker = GeneralWorker(ApproximateEntropy.prepare_calculate_windowed,
                                        dimension, file_name, en_calculation_type, en_dev_coef_value,
                                        en_use_threshold, en_threshold_value, window_size, step_size)
                 self.threadpool.start(worker)
