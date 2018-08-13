@@ -31,4 +31,4 @@ deploy:
   draft: false
   prerelease: false
   on:
-    branch: releases/*
+    branch: /releases\/.+/
