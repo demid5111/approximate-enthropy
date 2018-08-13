@@ -1,7 +1,6 @@
 import os
 from math import log
 
-import src.utils.constants as constants
 from src.core.apen import ApEn
 from src.core.report import SampEnReport
 
@@ -75,9 +74,11 @@ class SampEn(ApEn):
 if __name__ == '__main__':
     apEn = SampEn()
 
+    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data')
+
     # calculate for multiple windows
     r3 = apEn.prepare_calculate_window_sampen(m=2,
-                                              file_name=os.path.join(constants.DATA_DIR, 'samp_en', '0.txt'),
+                                              file_name=os.path.join(data_dir, 'samp_en', '0.txt'),
                                               calculation_type=CalculationType.CONST,
                                               dev_coef_value=0.5,
                                               use_threshold=False,
@@ -86,7 +87,7 @@ if __name__ == '__main__':
                                               step_size=10)
     # calculate for single window
     r1 = apEn.prepare_calculate_window_sampen(m=2,
-                                              file_name=os.path.join(constants.DATA_DIR, 'samp_en', '0.txt'),
+                                              file_name=os.path.join(data_dir, 'samp_en', '0.txt'),
                                               calculation_type=CalculationType.CONST,
                                               dev_coef_value=0.5,
                                               use_threshold=False,

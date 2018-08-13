@@ -2,7 +2,6 @@ import operator
 import os
 from math import log, floor
 
-import src.utils.constants as constants
 from src.core.report import ApEnReport
 
 from src.utils.supporting import CalculationType
@@ -156,9 +155,11 @@ class ApEn:
 if __name__ == "__main__":
     apEn = ApEn()
 
+    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data')
+
     # calculate for multiple windows
     r3 = apEn.prepare_calculate_window_apen(m=2,
-                                            file_name=os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
+                                            file_name=os.path.join(data_dir, 'ApEn_amolituda_4.txt'),
                                             calculation_type=CalculationType.CONST,
                                             dev_coef_value=0.5,
                                             use_threshold=False,
@@ -167,7 +168,7 @@ if __name__ == "__main__":
                                             step_size=10)
     # calculate for single window
     r1 = apEn.prepare_calculate_window_apen(m=2,
-                                            file_name=os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
+                                            file_name=os.path.join(data_dir, 'ApEn_amolituda_4.txt'),
                                             calculation_type=CalculationType.CONST,
                                             dev_coef_value=0.5,
                                             use_threshold=False,

@@ -13,3 +13,5 @@ htmlcov/
 
 *.pyc
 __pycache__/
+venv
+dist

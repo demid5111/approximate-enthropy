@@ -1,15 +1,26 @@
+os:
+  - linux
+
 language: python
-python:
-  - "3.5"
+python: 3.5
 
-sudo: false
+install:
+  - pip3 install -r requirements.txt
 
-install: true
+stages:
+  - test
+
+jobs:
+  include:
+    - stage: test
+      script: python3 -m unittest discover -p *_test.py
 
 addons:
-  sonarqube:
+  sonarcloud:
     token:
       secure: "44020085f39b8bc472bb47d48a7ab7840e15a863"
+  artifacts:
+    working_dir: dist
 
 notifications:
-  email: false
+  email: true
