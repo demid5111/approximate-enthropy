@@ -32,4 +32,5 @@ deploy:
   file: dist/*
   skip_cleanup: true
   on:
-    branch: releases/ww34.10
+    all_branches: true
+    condition: $TRAVIS_BRANCH =~ ^releases\/.*$
