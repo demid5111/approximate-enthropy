@@ -1,3 +1,5 @@
+[![unit testing and osx packaging](https://travis-ci.org/demid5111/approximate-enthropy.svg?branch=master)](https://travis-ci.org/demid5111/approximate-enthropy)
+
 ### To run unit tests
 
 From the root run the following command:
