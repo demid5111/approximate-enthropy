@@ -21,7 +21,7 @@ jobs:
     - stage: test
       script: python3 -m unittest discover -p *_test.py
     - stage: deploy
-      script: pyinstaller --noconsole gui_version.spec
+      script: pyinstaller --noconsole gui_version.spec && ls -la dist
       deploy:
         provider: releases
         api_key:
