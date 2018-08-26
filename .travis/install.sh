@@ -12,4 +12,9 @@ if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     pyenv-virtualenv venv
     source venv/bin/activate
     python --version
-  fi
+else
+    sudo add-apt-repository ppa:jonathonf/python-3.5
+    sudo apt-get update
+    sudo apt-get install python3.5
+    python3 --version
+fi
