@@ -2,6 +2,7 @@
 
 # thanks to https://pythonhosted.org/CodeChat/.travis.yml.html article
 if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    echo HERE2
     brew update
     brew install openssl readline
     brew outdated pyenv || brew upgrade pyenv
@@ -13,6 +14,7 @@ if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     source venv/bin/activate
     python --version
 else
+    echo HERE
     sudo add-apt-repository ppa:jonathonf/python-3.5
     sudo apt-get update
     sudo apt-get install python3.5
