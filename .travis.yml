@@ -1,16 +1,19 @@
 language: python
-
-matrix:
-    include:
-        - os: linux
-          sudo: required
-          python: 3.5
-          env: PYTHON=3.5.1
-        - os: osx
-          language: generic
-          env: PYTHON=3.5.1
-before_install:
-  - chmod +x ./.travis/install.sh && ./.travis/install.sh
+#python: 3.5
+os: osx
+osx_image: xcode8.3
+#
+#matrix:
+#    include:
+#        - os: linux
+#          sudo: required
+#          python: 3.5
+#          env: PYTHON=3.5.1
+#        - os: osx
+#          language: generic
+#          env: PYTHON=3.5.1
+#before_install:
+#  - chmod +x ./.travis/install.sh && ./.travis/install.sh
 install:
     - pip3 install -r requirements.txt
 
