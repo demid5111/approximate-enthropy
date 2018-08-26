@@ -55,7 +55,7 @@ elif sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linu
 # Package the executable file into .app if on OS X
 if sys.platform == 'darwin':
    app = BUNDLE(exe,
-                name='SignalAnalyzer.app',
+                name='HeartAlgo-Analyzer.app',
                 info_plist={
                   'NSHighResolutionCapable': 'True'
                 },
