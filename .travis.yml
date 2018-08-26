@@ -32,6 +32,4 @@ deploy:
   file: dist/*
   skip_cleanup: true
   on:
-    branches:
-      only:
-        - /^releases/.*$/
+    branch: /^releases/.*$/
