@@ -15,9 +15,6 @@ install:
 stages:
   - test
   - name: deploy
-    on:
-      all_branches: true
-      condition: $TRAVIS_BRANCH =~ ^releases\/.*$
 
 jobs:
   include:
@@ -32,6 +29,9 @@ jobs:
         file_glob: true
         file: dist/HeartAlgo-Analyzer.app
         skip_cleanup: true
+        on:
+          all_branches: true
+          condition: $TRAVIS_BRANCH =~ ^releases\/.*$
 
 addons:
   sonarcloud:
