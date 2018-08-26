@@ -5,14 +5,12 @@ matrix:
         - os: linux
           sudo: required
           python: 3.5
+          env: TOXENV=py35
         - os: osx
           language: generic
           env: TOXENV=py35
 install:
     - ./.travis/install.sh
-
-install:
-  - pip3 install -r requirements.txt
 
 stages:
   - test
