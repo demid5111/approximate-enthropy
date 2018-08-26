@@ -50,6 +50,8 @@ class SampEn(ApEn):
         res_report.set_file_name(file_name)
         res_report.set_dimension(m)
         try:
+            res_report.set_window_size(window_size)
+            res_report.set_step_size(step_size)
             seq_list, average_rr_list, r_val_list, window_size, step_size = SampEn.prepare_windows_calculation(m, file_name,
                                                                                                              calculation_type,
                                                                                                              dev_coef_value,
@@ -58,10 +60,8 @@ class SampEn(ApEn):
                                                                                                              window_size,
                                                                                                              step_size)
             sampen_results = [SampEn.calculate_sampen(m=m, seq=seq_list[i], r=r_val_list[i]) for i in range(len(seq_list))]
-            res_report.set_window_size(window_size)
-            res_report.set_step_size(step_size)
-        except (ValueError, AssertionError):
-            res_report.set_error("Error! For file {}".format(file_name))
+        except (ValueError, AssertionError) as e:
+            res_report.set_error("Error! For file {}. Error: {}".format(file_name, e))
             return res_report
 
         res_report.set_avg_rr(average_rr_list)
