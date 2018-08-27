@@ -3,6 +3,16 @@ environment:
   matrix:
     - PYTHON: "C:\\Python36-x64"
 
+branches:
+  only:
+    - /^releases\/.*$/
+
+branches:
+  except:
+    - /untagged-.*/
+    - master
+    - /feature.*/
+
 cache:
   - '%LOCALAPPDATA%\pip\Cache'
 
