@@ -16,7 +16,7 @@ branches:
 
 before_install:
   - nvm ls
-  - nvm use v8.11.3
+  - nvm use lts/carbon
   - node --version
 
 install:
