@@ -10,6 +10,7 @@ branches:
     - /untagged-.*/
     - master
     - /feature.*/
+    - /heartalgo-analyzer-.*/
 
 cache:
   - '%LOCALAPPDATA%\pip\Cache'
