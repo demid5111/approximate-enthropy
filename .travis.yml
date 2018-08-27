@@ -14,9 +14,15 @@ branches:
   - /^heartalgo\-analyzer\-v.*$/
   - /^untagged\-.*$/
 
+before_install:
+  - brew unlink node
+  - brew install node@7
+  - brew link node@7
+  - node --version
+
 install:
-    - npm install -g create-dmg
-    - pip3 install -r requirements.txt
+  - npm install -g create-dmg
+  - pip3 install -r requirements.txt
 
 stages:
   - test
