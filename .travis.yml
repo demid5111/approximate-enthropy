@@ -21,14 +21,14 @@ jobs:
     - stage: test
       script: python3 -m unittest discover -p *_test.py
     - stage: deploy
-      script: pyinstaller --noconsole gui_version.spec && zip -r HeartAlgo-Analyzer.zip dist/HeartAlgo-Analyzer.app
+      script: pyinstaller --noconsole gui_version.spec && ls && zip -r HeartAlgo-Analyzer.zip dist/HeartAlgo-Analyzer.app
       deploy:
         provider: releases
         api_key:
           secure: "Qe+gJCnPVai0lRpgROW+XNo0THvi0/57Yg1oIUTkqedrg3Nu4qcE+MwqfvuJLVd7EQ8NloxY6gF5AhrciMv3jVjdgT23xQcfoYK0/SViOrT5FefLJeDeMi0wel3SQrvmLduSGZHYeewB5d2pp4JvR5kvOyLgxcCech+uoRteE9JCXBzjjK/xIo47RRTZralklrIr4YayYVSK4U2CHaxpBAT+2RfYC+R4ewUUXM77PXoTCjN9Ft2rC3cvi/ofxqMG6sv6l+C6msNqQZcJ69wz2Wo8M+LSsC8brKSq/PI9VLyAUQUEEwSEVxe41qnmREAvR3cn6YD1gGt5wszFBxDIYm9UWJIhHtV7XC6/MPyhI+DzIYa7Wti2h+4YHB5/XaKxNOPcIOao0M/hW22EC2mRxyi5tk8qIP7lauBB6f2vpcbTL0J7cIrK6iOxSGFFXwvBPt3yccHUVNzb7wRguK92FgQQNJF1n1YKf0S9MXyJ9QCytE88YAZtqU3kpM9hxVJnPJ2vqJIYEKNJMQ0JP0N8p3v1B4SLCxtgz+bhLSHSXX8aU2jnGjkcqW2N+33ElmjS/QZum7l5Ea7pFHn4OLd9SsJnkeqdjNBc8tC364G0pT825AwxLDVAAIClbwMRaUD01WvOeDbQRZQgC8Gyl/nzYAYtYnTthWpvN2sQjtct3VA="
-        file_glob: true
         file: HeartAlgo-Analyzer.zip
         skip_cleanup: true
+        name: osx build \#$TRAVIS_BUILD_NUMBER $(date +'%d.%m.%Y %R')
         on:
           all_branches: true
           condition: $TRAVIS_BRANCH =~ ^releases\/.*$
