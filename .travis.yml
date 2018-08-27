@@ -14,6 +14,9 @@ branches:
   - /^heartalgo\-analyzer\-v.*$/
   - /^untagged\-.*$/
 
+tags:
+  enabled: false
+
 before_install:
   - nvm ls
   - nvm install lts/carbon
