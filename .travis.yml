@@ -8,8 +8,6 @@ branches:
   - develop
   - /^feature\/.*$/
   - /^releases\/.*$/
-
-branches:
   except:
   - /^heartalgo\-analyzer\-v.*$/
   - /^untagged\-.*$/
