@@ -16,6 +16,7 @@ branches:
 
 before_install:
   - nvm ls
+  - nvm install lts/carbon
   - nvm use lts/carbon
   - node --version
 
