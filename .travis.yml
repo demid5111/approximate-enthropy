@@ -12,6 +12,7 @@ branches:
 branches:
   except:
   - /^heartalgo\-analyzer\-v.*$/
+  - /^untagged\-.*$/
 
 install:
     - pip3 install -r requirements.txt
