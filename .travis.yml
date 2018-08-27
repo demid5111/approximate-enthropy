@@ -16,8 +16,8 @@ branches:
 
 before_install:
   - brew unlink node
-  - brew install node@7
-  - brew link node@7
+  - brew install node@8
+  - brew link node@8
   - node --version
 
 install:
