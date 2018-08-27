@@ -35,7 +35,7 @@ jobs:
     - stage: deploy
       script:
         - pyinstaller --noconsole gui_version.spec
-        - create-dmg dist/HeartAlgo-Analyzer.app
+        - create-dmg dist/HeartAlgo-Analyzer.app || true
         - zip HeartAlgo-Analyzer.zip HeartAlgo-Analyzer\ 0.0.0.dmg
       deploy:
         provider: releases
