@@ -15,9 +15,8 @@ branches:
   - /^untagged\-.*$/
 
 before_install:
-  - brew unlink node
-  - brew install node@8
-  - brew link --overwrite --dry-run node@8
+  - nvm ls
+  - nvm use v8.11.3
   - node --version
 
 install:
