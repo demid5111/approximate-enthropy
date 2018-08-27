@@ -26,7 +26,10 @@ jobs:
     - stage: test
       script: python3 -m unittest discover -p *_test.py
     - stage: deploy
-      script: pyinstaller --noconsole gui_version.spec && zip -r HeartAlgo-Analyzer.zip dist/HeartAlgo-Analyzer.app
+      script:
+        - pyinstaller --noconsole gui_version.spec
+        - create-dmg dist/HeartAlgo-Analyzer.app
+        - zip HeartAlgo-Analyzer.zip HeartAlgo-Analyzer\ 0.0.0.dmg
       deploy:
         provider: releases
         api_key:
