@@ -2,7 +2,7 @@ import csv
 import json
 import os
 
-from src.utils.supporting import AnalysisType
+from src.utils.supporting import AnalysisType, ARTIFACTS_DIR
 
 __author__ = 'demidovs'
 
@@ -187,8 +187,8 @@ class ReportManager:
         analysis_lines = []
         for f_name, reports in res_dic.items():
             analysis_lines.extend(ReportManager.prepare_analysis_report_single_file(f_name, reports))
-        os.makedirs(os.path.dirname(file_name), exist_ok=True)
-        ReportManager.write_report(file_name, header_lines, analysis_lines)
+        os.makedirs(os.path.join(ARTIFACTS_DIR, os.path.dirname(file_name)), exist_ok=True)
+        ReportManager.write_report(os.path.join(ARTIFACTS_DIR, file_name), header_lines, analysis_lines)
 
     @staticmethod
     def write_report(file_name="results/results.csv", header_lines=(), analysis_lines=()):

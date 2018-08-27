@@ -149,7 +149,7 @@ class ApEnWidget(QWidget):
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
         dialog.setText(
-                "{} calculated for: \n {}".format(source, "".join(["- {}, \n".format(i) for i in file_names.split(',')])))
+                "{} calculated for: \n {}".format(source, "".join(["- {} \n".format(i) for i in file_names.split(',')])))
         dialog.show()
 
     def set_in_progress(self, v):
