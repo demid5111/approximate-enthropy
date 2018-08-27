@@ -14,7 +14,11 @@ branches:
   - /^heartalgo\-analyzer\-v.*$/
   - /^untagged\-.*$/
 
+before_install:
+  - brew install npm
+
 install:
+    - npm install -g create-dmg
     - pip3 install -r requirements.txt
 
 stages:
