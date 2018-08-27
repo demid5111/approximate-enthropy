@@ -6,8 +6,6 @@ environment:
 branches:
   only:
     - /^releases\/.*$/
-
-branches:
   except:
     - /untagged-.*/
     - master
