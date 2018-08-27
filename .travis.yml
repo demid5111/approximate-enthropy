@@ -6,8 +6,12 @@ branches:
   only:
   - master
   - develop
-  - /^feature\/.+/
-  - /^releases\/.+/
+  - /^feature\/.*$/
+  - /^releases\/.*$/
+
+branches:
+  except:
+  - /^heartalgo\-analyzer\-v.*$/
 
 install:
     - pip3 install -r requirements.txt
