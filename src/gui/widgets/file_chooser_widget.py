@@ -16,14 +16,14 @@ class FileChooserWidget(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        fileNamesOpen = QPushButton("Open files", self)
+        fileNamesOpen = QPushButton('Open files', self)
         fileNamesOpen.clicked.connect(self.show_file_chooser)
 
-        fileNamesClean = QPushButton("Clean files", self)
+        fileNamesClean = QPushButton('Clean files', self)
         fileNamesClean.clicked.connect(self.clean_file_names)
 
         file_chooser_group = QGridLayout()
-        fileNamesLabel = QLabel("Files to analyze")
+        fileNamesLabel = QLabel('Files to analyze')
         self.file_names_edit = QTextEdit('')
 
         file_buttons_group = QVBoxLayout()
@@ -43,11 +43,12 @@ class FileChooserWidget(QWidget):
     def show_file_chooser(self):
         path = ""
         try:
-            with open(self.file_name, "r") as f:
+            with open(self.file_name, 'r') as f:
                 path = f.readline().strip()
         except FileNotFoundError:
             pass
-        fname = QFileDialog.getOpenFileNames(self, 'Open file', path, "DAT (*.dat, *.txt)")
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', path, 'DAT (*.dat, *.txt, *.DAT, *.TXT)',
+                                             'Text files (*.txt *.TXT, *.dat, *.DAT)')
         self.file_names_edit.setText("")
         print(fname)
         for name in fname[0]:
