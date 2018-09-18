@@ -4,85 +4,85 @@ import numpy as np
 import unittest
 from unittest.mock import patch
 
-import src.utils.constants as constants
 from src.core.apen_opt import ApproximateEntropy
 from src.core.en_opt import RCalculator
 
 from src.utils.supporting import CalculationType
+from tests.config_test import ConfigTest
 
 
-class TestApEnOptDeviation(unittest.TestCase):
+class TestApEnOptDeviation(unittest.TestCase, ConfigTest):
     def setUp(self):
         self.apEn = ApproximateEntropy()
 
     def test_deviation1(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         res = self.apEn.calculate_deviation(u_list)
         self.assertAlmostEqual(res, 1.41185, places=4, msg='incorrect deviation')
 
     def test_deviation2(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'), False, 0)
         res = self.apEn.calculate_deviation(u_list)
         self.assertAlmostEqual(res, 2.82371, places=4, msg='incorrect deviation')
 
     def test_deviation3(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_10.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'), False, 0)
         res = self.apEn.calculate_deviation(u_list)
         self.assertAlmostEqual(res, 7.05928, places=4, msg='incorrect deviation')
 
     def test_deviation4(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_random_2-10.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_random_2-10.txt'), False, 0)
         res = self.apEn.calculate_deviation(u_list)
         self.assertAlmostEqual(res, 4.61831, places=4, msg='incorrect deviation')
 
 
-class TestApEnComplexRCalculation(unittest.TestCase):
+class TestApEnComplexRCalculation(unittest.TestCase, ConfigTest):
     def setUp(self):
         self.apEn = ApproximateEntropy()
 
     def test_sdds1(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         sdds_deviation = RCalculator.make_sdds(u_list)
         self.assertAlmostEqual(sdds_deviation, 1.35532, places=4, msg='incorrect sdds')
 
     def test_sdds2(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_10.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'), False, 0)
         sdds_deviation = RCalculator.make_sdds(u_list)
         self.assertAlmostEqual(sdds_deviation, 6.77663, places=4, msg='incorrect sdds')
 
     def test_complex_r_calculation1(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         sdds_deviation = RCalculator.make_sdds(u_list)
         deviation = self.apEn.calculate_deviation(u_list)
         res = RCalculator.complex_r(sdds_deviation, deviation, len(u_list))
         self.assertAlmostEqual(res, 0.29556, places=4, msg='incorrect r')
 
     def test_complex_r_calculation2(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_10.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'), False, 0)
         sdds_deviation = RCalculator.make_sdds(u_list)
         deviation = self.apEn.calculate_deviation(u_list)
         res = RCalculator.complex_r(sdds_deviation, deviation, len(u_list))
         self.assertAlmostEqual(res, 0.29556, places=4, msg='incorrect r')
 
 
-class TestApEnPrepareCalculateApEn(unittest.TestCase):
+class TestApEnPrepareCalculateApEn(unittest.TestCase, ConfigTest):
     def setUp(self):
         self.apEn = ApproximateEntropy()
 
     def test_prepare_calculate_const_r(self):
         deviation = 1.41185
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         r = RCalculator.calculate_r(CalculationType.CONST, deviation, 0, u_list)
         self.assertAlmostEqual(r, deviation * 0.2, places=4, msg='incorrect r')
 
     def test_prepare_calculate_dev_r(self):
         deviation = 1.41185
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         r = RCalculator.calculate_r(CalculationType.DEV, deviation, 0.5, u_list)
         self.assertAlmostEqual(r, deviation * 0.5, places=4, msg='incorrect r')
 
     def test_prepare_calculate_complex_r(self):
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         deviation = self.apEn.calculate_deviation(u_list)
         r = RCalculator.calculate_r(CalculationType.COMPLEX, deviation, 0.5, u_list)
         self.assertAlmostEqual(r, 0.29556, places=4, msg='incorrect r')
@@ -92,10 +92,10 @@ class TestApEnPrepareCalculateApEn(unittest.TestCase):
     def test_prepare_calculate_r(self, mock_calculate_r, mock_calculate_apen):
         mock_calculate_r.return_value = 0.28237
         mock_calculate_apen.return_value = 3
-        u_list = self.apEn.read_series(os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'), False, 0)
+        u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         deviation = self.apEn.calculate_deviation(u_list)
         r = RCalculator.calculate_r(CalculationType.COMPLEX, deviation, 0.5, u_list)
-        self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'),
+        self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
                                                 CalculationType.CONST, 0, False, 0)
         self.assertEqual(mock_calculate_r.call_args[0][0], CalculationType.CONST)
         self.assertEqual(mock_calculate_r.call_args[0][1], 1.4118572032582124)
@@ -109,72 +109,72 @@ class TestApEnPrepareCalculateApEn(unittest.TestCase):
         self.assertAlmostEqual(r, 0.28237, places=4, msg='incorrect r')
 
 
-class TestApEnCalculateOverallApEn(unittest.TestCase):
+class TestApEnCalculateOverallApEn(unittest.TestCase, ConfigTest):
     def setUp(self):
         self.apEn = ApproximateEntropy()
 
     def test_calculate_apen_2_const(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
                                                     CalculationType.CONST, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12211, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_2_dev(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
                                                     CalculationType.DEV, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12365, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_2_complex(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_2.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
                                                     CalculationType.COMPLEX, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12003, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_4_const(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
                                                     CalculationType.CONST, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12211, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_4_dev(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
                                                     CalculationType.DEV, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12365, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_4_complex(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_4.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
                                                     CalculationType.COMPLEX, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.11040, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_10_const(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_10.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
                                                     CalculationType.CONST, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12211, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_10_dev(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_10.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
                                                     CalculationType.DEV, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12365, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_10_complex(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(constants.DATA_DIR, 'ApEn_amolituda_10.txt'),
+        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
                                                     CalculationType.COMPLEX, 0.5, False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.15675, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_210_const(self):
         r = self.apEn.prepare_calculate_windowed(2,
-                                                    os.path.join(constants.DATA_DIR, 'ApEn_amolituda_random_2-10.txt'),
+                                                    os.path.join(self.resource_path, 'ApEn_amolituda_random_2-10.txt'),
                                                     CalculationType.CONST, 0.5,
                                                     False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.96967, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_210_dev(self):
         r = self.apEn.prepare_calculate_windowed(2,
-                                                    os.path.join(constants.DATA_DIR, 'ApEn_amolituda_random_2-10.txt'),
+                                                    os.path.join(self.resource_path, 'ApEn_amolituda_random_2-10.txt'),
                                                     CalculationType.DEV, 0.5,
                                                     False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.67897, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_210_complex(self):
         r = self.apEn.prepare_calculate_windowed(2,
-                                                    os.path.join(constants.DATA_DIR, 'ApEn_amolituda_random_2-10.txt'),
+                                                    os.path.join(self.resource_path, 'ApEn_amolituda_random_2-10.txt'),
                                                     CalculationType.COMPLEX, 0.5,
                                                     False, 0)
         self.assertAlmostEqual(r.get_result_value(0), 0.26964, places=4, msg='incorrect ApEnOpt')
