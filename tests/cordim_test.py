@@ -2,9 +2,10 @@ import unittest
 from unittest.mock import patch
 
 from src.core.cordim import CorDim
+from tests.config_test import ConfigTest
 
 
-class TestCorDimCalculateHeviside(unittest.TestCase):
+class TestCorDimCalculateHeviside(unittest.TestCase, ConfigTest):
     def setUp(self):
         self.corDim = CorDim()
 
@@ -25,7 +26,7 @@ class TestCorDimCalculateHeviside(unittest.TestCase):
         self.assertEqual(0, r, msg='heviside equals 0 for all negative differences')
 
 
-class TestCorDimCalculateAttractor(unittest.TestCase):
+class TestCorDimCalculateAttractor(unittest.TestCase, ConfigTest):
     def setUp(self):
         self.corDim = CorDim()
 
@@ -46,7 +47,7 @@ class TestCorDimCalculateAttractor(unittest.TestCase):
         self.assertEqual(1, r, msg='attractor for zero radius and zero cor func')
 
 
-class TestCorDimCalculateCor(unittest.TestCase):
+class TestCorDimCalculateCor(unittest.TestCase, ConfigTest):
     def setUp(self):
         self.corDim = CorDim()
 

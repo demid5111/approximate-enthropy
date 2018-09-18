@@ -3,6 +3,8 @@ import os
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QTextEdit, QLabel, QVBoxLayout, QFileDialog
 
+from src.utils.supporting import ARTIFACTS_DIR
+
 
 class FileChooserWidget(QWidget):
     new_files_chosen = pyqtSignal()
@@ -58,7 +60,8 @@ class FileChooserWidget(QWidget):
         if not self.file_names_edit:
             return
         path = os.path.dirname(self.file_names_edit.toPlainText().split('\n')[0])
-        with open(self.file_name, 'w') as f:
+        os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+        with open(os.path.join(ARTIFACTS_DIR, self.file_name), "w") as f:
             f.write(path + '/')
 
     def get_file_names(self):

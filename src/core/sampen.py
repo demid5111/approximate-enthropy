@@ -1,7 +1,6 @@
 import os
 from math import log
 
-import src.utils.constants as constants
 from src.core.apen import ApEn
 from src.core.report import SampEnReport
 
@@ -51,6 +50,8 @@ class SampEn(ApEn):
         res_report.set_file_name(file_name)
         res_report.set_dimension(m)
         try:
+            res_report.set_window_size(window_size)
+            res_report.set_step_size(step_size)
             seq_list, average_rr_list, r_val_list, window_size, step_size = SampEn.prepare_windows_calculation(m, file_name,
                                                                                                              calculation_type,
                                                                                                              dev_coef_value,
@@ -59,10 +60,8 @@ class SampEn(ApEn):
                                                                                                              window_size,
                                                                                                              step_size)
             sampen_results = [SampEn.calculate_sampen(m=m, seq=seq_list[i], r=r_val_list[i]) for i in range(len(seq_list))]
-            res_report.set_window_size(window_size)
-            res_report.set_step_size(step_size)
-        except (ValueError, AssertionError):
-            res_report.set_error("Error! For file {}".format(file_name))
+        except (ValueError, AssertionError) as e:
+            res_report.set_error("Error! For file {}. Error: {}".format(file_name, e))
             return res_report
 
         res_report.set_avg_rr(average_rr_list)
@@ -75,9 +74,11 @@ class SampEn(ApEn):
 if __name__ == '__main__':
     apEn = SampEn()
 
+    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data')
+
     # calculate for multiple windows
     r3 = apEn.prepare_calculate_window_sampen(m=2,
-                                              file_name=os.path.join(constants.DATA_DIR, 'samp_en', '0.txt'),
+                                              file_name=os.path.join(data_dir, 'samp_en', '0.txt'),
                                               calculation_type=CalculationType.CONST,
                                               dev_coef_value=0.5,
                                               use_threshold=False,
@@ -86,7 +87,7 @@ if __name__ == '__main__':
                                               step_size=10)
     # calculate for single window
     r1 = apEn.prepare_calculate_window_sampen(m=2,
-                                              file_name=os.path.join(constants.DATA_DIR, 'samp_en', '0.txt'),
+                                              file_name=os.path.join(data_dir, 'samp_en', '0.txt'),
                                               calculation_type=CalculationType.CONST,
                                               dev_coef_value=0.5,
                                               use_threshold=False,

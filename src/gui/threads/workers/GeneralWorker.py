@@ -1,4 +1,3 @@
-import json
 import time
 from PyQt5.QtCore import QRunnable, pyqtSlot
 
@@ -17,3 +16,5 @@ class GeneralWorker(QRunnable):
     def run(self):
         res = self.fn(*self.args)
         self.signals.result.emit(res)
+        print('Sleep for a moment...')
+        time.sleep(0.01)

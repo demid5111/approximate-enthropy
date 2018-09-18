@@ -1,0 +1,43 @@
+environment:
+  PATH: C:\\Python36-x64\\Scripts;$(PATH)
+  matrix:
+    - PYTHON: "C:\\Python36-x64"
+
+branches:
+  only:
+    - /^releases\/.*$/
+  except:
+    - /untagged-.*/
+    - master
+    - /feature.*/
+    - /heartalgo-analyzer-.*/
+
+cache:
+  - '%LOCALAPPDATA%\pip\Cache'
+
+install:
+  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+
+build: off
+
+test_script:
+  - "%PYTHON%\\python.exe -m unittest discover -p *_test.py"
+
+after_test:
+  - "pyinstaller --noconsole gui_version.spec"
+
+artifacts:
+  - path: dist\HeartAlgo-Analyzer.exe
+    type: zip
+
+deploy:
+  release: heartalgo-analyzer-v$(appveyor_build_version)
+  description: 'Automatic release of stable Windows bundle'
+  provider: GitHub
+  auth_token:
+    secure: gmwcbB/OKfmBwok7sUUR7zVxlD/ZZfNyglKurVXM/aKhcyWGb4ewYYX8zMqX+fk7
+  artifact: dist\HeartAlgo-Analyzer.exe
+  draft: false
+  prerelease: false
+  on:
+    branch: /releases\/.+/
