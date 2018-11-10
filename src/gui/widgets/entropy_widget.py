@@ -43,18 +43,21 @@ class EntropyWidget(QWidget):
         self.is_samp_en_used = True
         samp_en_cb.clicked.connect(self.toggle_samp_en_cb)
 
-        cb = QCheckBox('Use threshold', self)
-        cb.setChecked(True)
+        cb = QCheckBox('Use threshold (minumum number of elements in a sequence)', self)
         self.is_threshold_used = True
+        cb.setChecked(self.is_threshold_used)
         cb.clicked.connect(self.toggle_threshold_checkbox)
-        self.rThreshold = QLineEdit("300")
 
-        rLabel = QLabel("r")
+        self.r_threshold_label = QLabel('<p style="text-align:right">threshold</p>')
+        self.r_threshold = QLineEdit("300")
+
+        rLabel = QLabel("r (maximum distance between<br>vectors that can be considered<br> as close to each other)")
         number_group = self.config_r_enth_group()
 
         grid = QGridLayout()
-        grid.addWidget(cb, 0, 0)
-        grid.addWidget(self.rThreshold, 0, 1)
+        grid.addWidget(cb, 0, 0, 1, 2)
+        grid.addWidget(self.r_threshold_label, 1, 0)
+        grid.addWidget(self.r_threshold, 1, 1)
 
         grid.addWidget(rLabel, 3, 0)
         grid.addLayout(number_group, 3, 1)
@@ -77,7 +80,7 @@ class EntropyWidget(QWidget):
 
     def toggle_threshold_checkbox(self):
         self.is_threshold_used = not self.is_threshold_used
-        self.rThreshold.setEnabled(self.is_threshold_used)
+        self.r_threshold.setEnabled(self.is_threshold_used)
 
     def toggle_ap_en_cb(self):
         self.is_ap_en_used = not self.is_ap_en_used
@@ -98,7 +101,7 @@ class EntropyWidget(QWidget):
         self.is_ap_en_used = v
 
     def get_threshold(self):
-        return int(self.rThreshold.text()) if self.is_threshold_used else -1
+        return int(self.r_threshold.text()) if self.is_threshold_used else -1
 
     def get_dev_coef_value(self):
         return float(self.rDevCoef.text()) if self.calculateR == CalculationType.DEV else -1

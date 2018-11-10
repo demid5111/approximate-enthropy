@@ -7,6 +7,7 @@ from src.gui.widgets.cor_dim_widget import CorDimWidget
 from src.gui.widgets.entropy_widget import EntropyWidget
 from src.gui.widgets.file_chooser_widget import FileChooserWidget
 from src.gui.widgets.frac_dim_widget import FracDimWidget
+from src.gui.widgets.window_analysis_widget import WindowAnalysisWidget
 
 
 class ApEnWidget(QWidget):
@@ -39,14 +40,15 @@ class ApEnWidget(QWidget):
         self.check_run_button_state()
 
     def config_entropy_tab(self):
-        mLabel = QLabel('m')
+        mLabel = QLabel('m (length of vectors)<br>or n (for pertropy only) ')
         self.mEdit = QLineEdit("2")
-        window_cb = QCheckBox('Use windows', self)
-        window_cb.setChecked(True)
-        window_cb.clicked.connect(self.toggle_window_checkbox)
-        self.window_size_edit = QLineEdit("100")
-        self.window_step_edit = QLineEdit("10")
+
+        window_cb = QCheckBox('Use sliding windows', self)
         self.is_windows_enabled = True
+        window_cb.setChecked(self.is_windows_enabled)
+        window_cb.clicked.connect(self.toggle_window_checkbox)
+
+        self.window_analysis_widget = WindowAnalysisWidget(self)
 
         self.is_use_ent_cb = QCheckBox('Calculate entropy?', self)
         self.is_calc_ent = True
@@ -72,8 +74,7 @@ class ApEnWidget(QWidget):
         grid.addWidget(mLabel, 0, 0)
         grid.addWidget(self.mEdit, 0, 1)
         grid.addWidget(window_cb, 1, 0)
-        grid.addWidget(self.window_size_edit, 1, 1)
-        grid.addWidget(self.window_step_edit, 2, 1)
+        grid.addWidget(self.window_analysis_widget, 2, 1)
         grid.addWidget(self.is_use_ent_cb, 3, 0)
         grid.addWidget(self.ent_widget, 4, 1)
 
@@ -169,8 +170,7 @@ class ApEnWidget(QWidget):
 
     def toggle_window_checkbox(self):
         self.is_windows_enabled = not self.is_windows_enabled
-        self.window_size_edit.setEnabled(self.is_windows_enabled)
-        self.window_step_edit.setEnabled(self.is_windows_enabled)
+        self.window_analysis_widget.setHidden(not self.is_windows_enabled)
 
     def check_run_button_state(self):
         self.run_calculate.setEnabled((self.is_calc_ent or self.is_calc_cor_dim or self.is_calc_frac_dim) and
