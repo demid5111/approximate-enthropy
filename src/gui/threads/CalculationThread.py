@@ -119,7 +119,7 @@ class CalculationThread(QThread):
         self.full_job = -1
 
         if not self.res_dic:
-            self.done.emit('Error', 'Result is empty')
+            self.done.emit('Error', 'Result is empty', None)
             return
 
         analysis_names = ReportManager.get_analysis_types(self.res_dic)

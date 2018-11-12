@@ -43,10 +43,10 @@ class ApEnWidget(QWidget):
         mLabel = QLabel('m (length of vectors)<br>or n (for pertropy only) ')
         self.mEdit = QLineEdit("2")
 
-        window_cb = QCheckBox('Use sliding windows', self)
+        self.window_cb = QCheckBox('Use sliding windows', self)
         self.is_windows_enabled = True
-        window_cb.setChecked(self.is_windows_enabled)
-        window_cb.clicked.connect(self.toggle_window_checkbox)
+        self.window_cb.setChecked(self.is_windows_enabled)
+        self.window_cb.clicked.connect(self.toggle_window_checkbox)
 
         self.window_analysis_widget = WindowAnalysisWidget(self)
 
@@ -78,7 +78,7 @@ class ApEnWidget(QWidget):
         grid = QGridLayout()
         grid.addWidget(mLabel, 0, 0)
         grid.addWidget(self.mEdit, 0, 1)
-        grid.addWidget(window_cb, 1, 0)
+        grid.addWidget(self.window_cb, 1, 0)
         grid.addWidget(self.window_analysis_widget, 2, 1)
         grid.addWidget(self.is_use_ent_cb, 3, 0)
         grid.addWidget(self.ent_widget, 4, 1)
@@ -155,14 +155,14 @@ class ApEnWidget(QWidget):
         self.progress_bar.setValue(val)
 
     def show_message(self, source, file_names, report_path=None):
-        dialog = QMessageBox(self)
-        dialog.setWindowModality(False)
+        self.dialog = QMessageBox(self)
+        self.dialog.setWindowModality(False)
         all_files = "".join(["- {} \n".format(i) for i in file_names.split(',')])
         dialog_text = "{} calculated for: \n {}".format(source, all_files)
         if report_path:
             dialog_text += '\n Saved report in {}'.format(report_path)
-        dialog.setText(dialog_text)
-        dialog.show()
+        self.dialog.setText(dialog_text)
+        self.dialog.show()
 
     def set_in_progress(self, v):
         self.is_in_progress = v

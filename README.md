@@ -11,6 +11,12 @@ To collect coverage:
 2. Generate html report: `coverage html --include='*.py'`
 3. Open `index.html` in `htmlcov` directory
 
+### To run e2e tests
+
+From the root run the following command:
+
+`python -m pytest tests/gui/
+
 ### Adding new version
 
 1. Create tag:

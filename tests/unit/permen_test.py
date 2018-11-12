@@ -6,7 +6,7 @@ import numpy.testing as npt
 
 from src.core.en_opt import Entropy
 from src.core.permen import PermutationEntropy
-from tests.config_test import ConfigTest
+from tests.unit.config_test import ConfigTest
 
 
 class TestPermuteEntropySingleSequenceCalculation(unittest.TestCase, ConfigTest):

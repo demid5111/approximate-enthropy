@@ -33,15 +33,15 @@ class EntropyWidget(QWidget):
         return number_group
 
     def init_ui(self):
-        ap_en_cb = QCheckBox('Calculate Approximate Entropy', self)
-        ap_en_cb.setChecked(True)
+        self.ap_en_cb = QCheckBox('Calculate Approximate Entropy', self)
         self.is_ap_en_used = True
-        ap_en_cb.clicked.connect(self.toggle_ap_en_cb)
+        self.ap_en_cb.setChecked(self.is_ap_en_used)
+        self.ap_en_cb.clicked.connect(self.toggle_ap_en_cb)
 
-        samp_en_cb = QCheckBox('Calculate Sample Entropy', self)
-        samp_en_cb.setChecked(True)
+        self.samp_en_cb = QCheckBox('Calculate Sample Entropy', self)
         self.is_samp_en_used = True
-        samp_en_cb.clicked.connect(self.toggle_samp_en_cb)
+        self.samp_en_cb.setChecked(self.is_samp_en_used)
+        self.samp_en_cb.clicked.connect(self.toggle_samp_en_cb)
 
         cb = QCheckBox('Use threshold', self)
         self.is_threshold_used = True
@@ -62,8 +62,8 @@ class EntropyWidget(QWidget):
 
         grid.addWidget(rLabel, 3, 0)
         grid.addLayout(number_group, 3, 1)
-        grid.addWidget(ap_en_cb, 4, 0)
-        grid.addWidget(samp_en_cb, 5, 0)
+        grid.addWidget(self.ap_en_cb, 4, 0)
+        grid.addWidget(self.samp_en_cb, 5, 0)
 
         self.setLayout(grid)
 

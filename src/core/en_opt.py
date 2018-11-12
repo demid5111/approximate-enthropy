@@ -228,7 +228,7 @@ class Entropy:
             en_results = []
             for i in range(len(seq_list)):
                 calc_kwargs = dict(m=m, seq=seq_list[i])
-                if r_val_list:
+                if r_val_list is not None:
                     calc_kwargs['r'] = r_val_list[i]
                 en_results.append(cls.calculate(**calc_kwargs))
         except (ValueError, AssertionError):
@@ -241,7 +241,7 @@ class Entropy:
         res_report.set_avg_rr(average_rr_list)
         res_report.set_result_values(en_results)
 
-        if r_val_list:
+        if r_val_list is not None:
             res_report.set_r_values(r_val_list)
 
         return res_report

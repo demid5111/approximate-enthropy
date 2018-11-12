@@ -7,7 +7,7 @@ from src.utils.supporting import CalculationType
 
 
 # @unittest.skip("skipping heavy tests")
-from tests.config_test import ConfigTest
+from tests.unit.config_test import ConfigTest
 
 
 class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
