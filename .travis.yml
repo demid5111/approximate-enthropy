@@ -27,8 +27,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then nvm use lts/carbon ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then node --version ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y xvfb herbstluftwm ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pyenv install 3.6.6 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y xvfb herbstluftwm python3.6 python3-pip ; fi
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip3 install -r requirements.txt ; fi
