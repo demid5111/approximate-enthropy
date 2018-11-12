@@ -30,16 +30,14 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then nvm install lts/carbon ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then nvm use lts/carbon ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then node --version ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g create-dmg ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:deadsnakes/ppa ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y xvfb herbstluftwm python3.6 python3-pip ; fi
-
-install:
-  - pip3 install -r requirements.txt
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then npm install -g create-dmg ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "export DISPLAY=:99.0" ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset" ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sleep 3 ; fi
+  - pip3 install -r requirements.txt
 
 stages:
   - test
