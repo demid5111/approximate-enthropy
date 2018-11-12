@@ -26,15 +26,15 @@ before_install:
   - nvm install lts/carbon
   - nvm use lts/carbon
   - node --version
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo apt-get update ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo apt-get install -y xvfb herbstluftwm ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y xvfb herbstluftwm ; fi
 
 install:
   - npm install -g create-dmg
   - pip3 install -r requirements.txt
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; "export DISPLAY=:99.0" ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset" ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sleep 3 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "export DISPLAY=:99.0" ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset" ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sleep 3 ; fi
 
 stages:
   - test
@@ -45,12 +45,12 @@ jobs:
     - stage: test
       script:
         - python3 -m unittest discover -p *_test.py
-        - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; python3 -m pytest tests/gui ; fi
+        - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then python3 -m pytest tests/gui ; fi
     - stage: deploy
       script:
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; pyinstaller --noconsole gui_version.spec ; fi
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; create-dmg dist/HeartAlgo-Analyzer.app || true ; fi
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; zip HeartAlgo-Analyzer.zip HeartAlgo-Analyzer\ 0.0.0.dmg ; fi
+        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyinstaller --noconsole gui_version.spec ; fi
+        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then create-dmg dist/HeartAlgo-Analyzer.app || true ; fi
+        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then zip HeartAlgo-Analyzer.zip HeartAlgo-Analyzer\ 0.0.0.dmg ; fi
       deploy:
         provider: releases
         api_key:
