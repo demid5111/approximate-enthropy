@@ -27,6 +27,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then nvm use lts/carbon ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then node --version ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:deadsnakes/ppa ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y xvfb herbstluftwm python3.6 python3-pip ; fi
 
 install:
