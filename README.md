@@ -17,6 +17,7 @@ From the root run the following command:
 
 `python -m pytest tests/gui/`
 
+
 ### Adding new version
 
 1. Create tag:
