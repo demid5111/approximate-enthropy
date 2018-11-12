@@ -104,7 +104,6 @@ class CalculationThread(QThread):
                                        en_calculation_type, en_dev_coef_value)
                 self.threadpool.start(worker)
                 worker.signals.result.connect(self.receive_report)
-                worker.signals.result.connect(self.receive_report)
 
             if is_pertropy_enabled:
                 worker = GeneralWorker(PermutationEntropy.prepare_calculate_windowed,

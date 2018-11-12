@@ -15,7 +15,7 @@ To collect coverage:
 
 From the root run the following command:
 
-`python -m pytest tests/gui/
+`python -m pytest tests/gui/`
 
 ### Adding new version
 
