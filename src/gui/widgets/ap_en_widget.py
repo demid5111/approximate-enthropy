@@ -152,7 +152,7 @@ class ApEnWidget(QWidget):
         self.calc_thread.start()
 
     def track_ui_progress(self, val):
-        self.progress_bar.setValue(val)
+        self.progress_bar.setValue(val if val < 100 else 0)
 
     def show_message(self, source, file_names, report_path=None):
         self.dialog = QMessageBox(self)

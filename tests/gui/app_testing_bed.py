@@ -1,4 +1,6 @@
 import os
+import itertools
+
 from PyQt5.QtCore import *
 
 
@@ -18,6 +20,9 @@ class AppTestingBed:
 
     def press_sampen_cb(self):
         self._click(self.window.table_widget.ent_widget.samp_en_cb)
+
+    def press_samen_apen_cb(self):
+        self._click(self.window.table_widget.is_use_ent_cb)
 
     def press_pertropy_cb(self):
         self._click(self.window.table_widget.is_use_pertropy_cb)
@@ -64,5 +69,31 @@ class ApEnTestingBed(AppTestingBed):
     def check_modal_not_error(self):
         text = self.window.table_widget.dialog.text()
         assert 'ApEn calculated for' in text
+        assert 'Saved report in' in text
+        return text.split('Saved report in')[1].strip()
+
+
+class ComboApEnSampEnTestingBed(AppTestingBed):
+    def check_modal_not_error(self):
+        text = self.window.table_widget.dialog.text()
+        assert 'ApEn,SampEn calculated for' in text or 'SampEn,ApEn calculated for' in text
+        assert 'Saved report in' in text
+        return text.split('Saved report in')[1].strip()
+
+
+class ComboApEnSampEnPermEnTestingBed(AppTestingBed):
+    def check_modal_not_error(self):
+        text = self.window.table_widget.dialog.text()
+        combos = list(itertools.permutations(['ApEn', 'SampEn', 'PermEn']))
+        existed = ['{} calculated for'.format(','.join(sub)) in text for sub in combos]
+        assert any(existed)
+        assert 'Saved report in' in text
+        return text.split('Saved report in')[1].strip()
+
+
+class PermEnTestingBed(AppTestingBed):
+    def check_modal_not_error(self):
+        text = self.window.table_widget.dialog.text()
+        assert 'PermEn calculated for' in text
         assert 'Saved report in' in text
         return text.split('Saved report in')[1].strip()

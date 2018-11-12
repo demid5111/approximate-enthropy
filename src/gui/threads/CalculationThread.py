@@ -113,9 +113,10 @@ class CalculationThread(QThread):
                 self.threadpool.start(worker)
                 worker.signals.result.connect(self.receive_report)
 
+    def on_threads_completed(self):
         self.threadpool.waitForDone()
-        self.job_index = -1
-        self.full_job = -1
+        self.job_index = 0
+        self.full_job = 0
 
         if not self.res_dic:
             self.done.emit('Error', 'Result is empty', None)
@@ -130,6 +131,8 @@ class CalculationThread(QThread):
 
     def update_progress(self, full, current):
         progress = math.ceil((current / full) * 100)
+        if progress == 100:
+            self.on_threads_completed()
         self.progress.emit(progress)
 
     def receive_report(self, report):
