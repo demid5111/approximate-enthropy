@@ -60,7 +60,7 @@ jobs:
         name: osx build $TRAVIS_BUILD_NUMBER from $(date +'%d.%m.%Y %R')
         on:
           all_branches: true
-          condition: [$TRAVIS_BRANCH =~ ^releases\/.*$] AND ["$TRAVIS_OS_NAME" == "osx"]
+          condition: $TRAVIS_BRANCH =~ ^releases\/.*$ AND "$TRAVIS_OS_NAME" == "osx"
 
 addons:
   sonarcloud:
