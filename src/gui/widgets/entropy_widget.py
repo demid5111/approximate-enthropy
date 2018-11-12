@@ -33,22 +33,23 @@ class EntropyWidget(QWidget):
         return number_group
 
     def init_ui(self):
-        ap_en_cb = QCheckBox('Calculate ApEn', self)
+        ap_en_cb = QCheckBox('Calculate Approximate Entropy', self)
         ap_en_cb.setChecked(True)
         self.is_ap_en_used = True
         ap_en_cb.clicked.connect(self.toggle_ap_en_cb)
 
-        samp_en_cb = QCheckBox('Calculate SampEn', self)
+        samp_en_cb = QCheckBox('Calculate Sample Entropy', self)
         samp_en_cb.setChecked(True)
         self.is_samp_en_used = True
         samp_en_cb.clicked.connect(self.toggle_samp_en_cb)
 
-        cb = QCheckBox('Use threshold (minumum number of elements in a sequence)', self)
+        cb = QCheckBox('Use threshold', self)
         self.is_threshold_used = True
         cb.setChecked(self.is_threshold_used)
         cb.clicked.connect(self.toggle_threshold_checkbox)
 
-        self.r_threshold_label = QLabel('<p style="text-align:right">threshold</p>')
+        descr = 'threshold (minumum number<br>of elements in a sequence)'
+        self.r_threshold_label = QLabel('<p style="text-align:right">{}</p>'.format(descr))
         self.r_threshold = QLineEdit("300")
 
         rLabel = QLabel("r (maximum distance between<br>vectors that can be considered<br> as close to each other)")

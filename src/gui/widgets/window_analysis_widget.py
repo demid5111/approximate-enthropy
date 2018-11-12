@@ -32,7 +32,7 @@ class WindowAnalysisWidget(QWidget):
     def get_window_step(self):
         res = -1
         try:
-            res = float(self.window_size.text())
+            res = float(self.window_step.text())
         except:
             pass
         return res

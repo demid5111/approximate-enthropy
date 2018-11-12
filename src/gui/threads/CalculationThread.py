@@ -1,10 +1,11 @@
 import math
 
-from PyQt5.QtCore import QThread, pyqtSignal, QThreadPool, QMutex
+from PyQt5.QtCore import QThread, pyqtSignal, QThreadPool, QMutex, QEventLoop, QTimer
 
 from src.core.apen_opt import ApproximateEntropy
 from src.core.cordim import CorDim
 from src.core.fracdim import FracDim
+from src.core.permen import PermutationEntropy
 from src.core.report import ReportManager
 from src.core.sampen_opt import SampleEntropy
 from src.gui.threads.workers.GeneralWorker import GeneralWorker
@@ -18,7 +19,7 @@ class CalculationThread(QThread):
                  window_size, step_size,
                  cor_dim_radius, is_samp_en, is_ap_en, en_use_threshold,
                  en_threshold_value, en_dev_coef_value, en_calculation_type,
-                 is_frac_dim_enabled, fd_max_k):
+                 is_frac_dim_enabled, fd_max_k, is_pertropy_enabled):
         QThread.__init__(self)
         self.is_cord_dim_enabled = is_cord_dim_enabled
         self.files_list = files_list
@@ -34,11 +35,13 @@ class CalculationThread(QThread):
         self.en_calculation_type = en_calculation_type
         self.is_frac_dim_enabled = is_frac_dim_enabled
         self.fd_max_k = fd_max_k
+        self.is_pertropy_enabled = is_pertropy_enabled
 
         self.res_dic = {}
         self.mutex = QMutex()
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+        self.print_my_configuration()
 
     def __del__(self):
         self.wait()
@@ -48,12 +51,12 @@ class CalculationThread(QThread):
                   self.dimension, self.window_size, self.step_size,
                   self.cor_dim_radius, self.is_samp_en, self.is_ap_en, self.en_use_threshold,
                   self.en_threshold_value, self.en_dev_coef_value, self.en_calculation_type,
-                  self.is_frac_dim_enabled, self.fd_max_k)
+                  self.is_frac_dim_enabled, self.fd_max_k, self.is_pertropy_enabled)
 
     def calc(self, is_cord_dim_enabled, files_list, dimension, window_size, step_size,
              cor_dim_radius=0, is_samp_en=False, is_ap_en=False, en_use_threshold=False,
              en_threshold_value=0, en_dev_coef_value=0, en_calculation_type=0,
-             is_frac_dim_enabled=False, fd_max_k=0):
+             is_frac_dim_enabled=False, fd_max_k=0, is_pertropy_enabled=False):
         # calculate what is the denominator for progress
         # num files * number of analysis algos
         num_algos = 0
@@ -64,6 +67,8 @@ class CalculationThread(QThread):
         if is_samp_en:
             num_algos += 1
         if is_ap_en:
+            num_algos += 1
+        if is_pertropy_enabled:
             num_algos += 1
         self.full_job = len(files_list) * num_algos
 
@@ -84,21 +89,39 @@ class CalculationThread(QThread):
 
             if is_samp_en:
                 worker = GeneralWorker(SampleEntropy.prepare_calculate_windowed,
-                                       dimension, file_name, en_calculation_type, en_dev_coef_value,
-                                       en_use_threshold, en_threshold_value, window_size, step_size)
+                                       dimension, file_name,
+                                       en_use_threshold, en_threshold_value,
+                                       window_size, step_size,
+                                       en_calculation_type, en_dev_coef_value)
                 self.threadpool.start(worker)
                 worker.signals.result.connect(self.receive_report)
 
             if is_ap_en:
                 worker = GeneralWorker(ApproximateEntropy.prepare_calculate_windowed,
-                                       dimension, file_name, en_calculation_type, en_dev_coef_value,
-                                       en_use_threshold, en_threshold_value, window_size, step_size)
+                                       dimension, file_name,
+                                       en_use_threshold, en_threshold_value,
+                                       window_size, step_size,
+                                       en_calculation_type, en_dev_coef_value)
+                self.threadpool.start(worker)
+                worker.signals.result.connect(self.receive_report)
+                worker.signals.result.connect(self.receive_report)
+
+            if is_pertropy_enabled:
+                worker = GeneralWorker(PermutationEntropy.prepare_calculate_windowed,
+                                       dimension, file_name,
+                                       en_use_threshold, en_threshold_value,
+                                       window_size, step_size)
                 self.threadpool.start(worker)
                 worker.signals.result.connect(self.receive_report)
 
         self.threadpool.waitForDone()
         self.job_index = -1
         self.full_job = -1
+
+        if not self.res_dic:
+            self.done.emit('Error', 'Result is empty')
+            return
+
         analysis_names = ReportManager.get_analysis_types(self.res_dic)
         self.done.emit(','.join(analysis_names), ','.join(list(self.res_dic.keys())))
         ReportManager.prepare_write_report(analysis_types=analysis_names, res_dic=self.res_dic)
@@ -117,3 +140,19 @@ class CalculationThread(QThread):
         self.job_index += 1
         self.update_progress(self.full_job, self.job_index)
         self.mutex.unlock()
+
+    def print_my_configuration(self):
+        print('m: {}'.format(self.dimension))
+        print('window size: {}'.format(self.window_size))
+        print('step size: {}'.format(self.step_size))
+        print('calculating cordim: {}'.format(self.is_cord_dim_enabled))
+        print('cordim radius: {}'.format(self.cor_dim_radius))
+        print('calculating apen: {}'.format(self.is_ap_en))
+        print('calculating sampen: {}'.format(self.is_samp_en))
+        print('using threshold: {}'.format(self.en_use_threshold))
+        print('threshold: {}'.format(self.en_threshold_value))
+        print('r type: {}'.format(self.en_calculation_type))
+        print('r dev coef: {}'.format(self.en_dev_coef_value))
+        print('calculating fracdim: {}'.format(self.is_frac_dim_enabled))
+        print('fracdim max k: {}'.format(self.fd_max_k))
+        print('calculating pertropy: {}'.format(self.is_pertropy_enabled))

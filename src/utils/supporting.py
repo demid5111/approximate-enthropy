@@ -11,6 +11,7 @@ class CalculationType:
 class AnalysisType:
     AP_EN = 'ApEn'
     SAMP_EN = 'SampEn'
+    PERM_EN = 'PermEn'
     COR_DIM = 'CorDim'
     FRAC_DIM = 'FracDim'
 

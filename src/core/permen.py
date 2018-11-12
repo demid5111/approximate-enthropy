@@ -15,9 +15,12 @@ This is the implementation of the original paper:
 import numpy as np
 
 from src.core.en_opt import Entropy
+from src.core.report import PermutationEntropyReport
 
 
 class PermutationEntropy(Entropy):
+    report_cls = PermutationEntropyReport
+
     @staticmethod
     def extract_pattern(seq):
         return tuple(np.argsort(seq))
