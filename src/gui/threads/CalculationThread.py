@@ -12,7 +12,7 @@ from src.gui.threads.workers.GeneralWorker import GeneralWorker
 
 
 class CalculationThread(QThread):
-    done = pyqtSignal(str, str)
+    done = pyqtSignal(str, str, str)
     progress = pyqtSignal(int)
 
     def __init__(self, is_cord_dim_enabled, files_list, dimension,
@@ -123,8 +123,11 @@ class CalculationThread(QThread):
             return
 
         analysis_names = ReportManager.get_analysis_types(self.res_dic)
-        self.done.emit(','.join(analysis_names), ','.join(list(self.res_dic.keys())))
         ReportManager.prepare_write_report(analysis_types=analysis_names, res_dic=self.res_dic)
+
+        all_analysis_names = ','.join(analysis_names)
+        all_files_names = ','.join(list(self.res_dic.keys()))
+        self.done.emit(all_analysis_names, all_files_names, ReportManager.get_report_path())
 
     def update_progress(self, full, current):
         progress = math.ceil((current / full) * 100)

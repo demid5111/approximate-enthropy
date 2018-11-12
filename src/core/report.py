@@ -218,8 +218,14 @@ class PermutationEntropyReport(IReport):
 
 
 class ReportManager:
-    @staticmethod
-    def prepare_write_report(file_name="results/results.csv", res_dic=None, analysis_types=()):
+    report_path = None
+
+    @classmethod
+    def get_report_path(cls):
+        return cls.report_path
+
+    @classmethod
+    def prepare_write_report(cls, file_name="results/results.csv", res_dic=None, analysis_types=()):
         if not res_dic:
             print("Error in generating report")
 
@@ -229,7 +235,8 @@ class ReportManager:
         for f_name, reports in res_dic.items():
             analysis_lines.extend(ReportManager.prepare_analysis_report_single_file(f_name, reports))
         os.makedirs(os.path.join(ARTIFACTS_DIR, os.path.dirname(file_name)), exist_ok=True)
-        ReportManager.write_report(os.path.join(ARTIFACTS_DIR, file_name), header_lines, analysis_lines)
+        cls.report_path = os.path.join(ARTIFACTS_DIR, file_name)
+        ReportManager.write_report(cls.report_path, header_lines, analysis_lines)
 
     @staticmethod
     def write_report(file_name="results/results.csv", header_lines=(), analysis_lines=()):

@@ -154,11 +154,14 @@ class ApEnWidget(QWidget):
     def track_ui_progress(self, val):
         self.progress_bar.setValue(val)
 
-    def show_message(self, source, file_names):
+    def show_message(self, source, file_names, report_path=None):
         dialog = QMessageBox(self)
         dialog.setWindowModality(False)
-        dialog.setText(
-                "{} calculated for: \n {}".format(source, "".join(["- {} \n".format(i) for i in file_names.split(',')])))
+        all_files = "".join(["- {} \n".format(i) for i in file_names.split(',')])
+        dialog_text = "{} calculated for: \n {}".format(source, all_files)
+        if report_path:
+            dialog_text += '\n Saved report in {}'.format(report_path)
+        dialog.setText(dialog_text)
         dialog.show()
 
     def set_in_progress(self, v):
