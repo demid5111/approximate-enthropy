@@ -29,9 +29,8 @@ jobs:
             . venv/bin/activate
             pip3 install -r requirements.txt
             sudo apt-get update
-            sudo apt-get install -y xvfb herbstluftwm
+            sudo apt-get install -y xvfb x11vnc herbstluftwm
             sudo apt-get install xorg
-            sudo apt-get install xvfb
             sudo apt-get install xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic
             export DISPLAY=:99.0
             Xvfb :99 -screen 0 1024x768x24 > /dev/null 1>&1 &
