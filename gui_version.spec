@@ -53,7 +53,7 @@ elif sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linu
             strip=False,
             upx=True,
             runtime_tmpdir=None,
-            console=True,
+            console=False,
             icon='assets/icon.ico')
 
 # Package the executable file into .app if on OS X
