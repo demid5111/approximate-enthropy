@@ -6,4 +6,4 @@ pyqt5==5.11.3
 pytest==3.10.1
 pytest_qt==3.2.1
 pytest-xvfb==1.1.0
-requests==2.19.1
+requests>=2.20.0
