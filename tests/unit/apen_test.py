@@ -5,7 +5,7 @@ from unittest.mock import patch
 from src.core.apen import ApEn
 
 from src.utils.supporting import CalculationType
-from tests.config_test import ConfigTest
+from tests.unit.config_test import ConfigTest
 
 
 class TestApEnDeviation(unittest.TestCase, ConfigTest):

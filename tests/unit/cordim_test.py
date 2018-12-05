@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from src.core.cordim import CorDim
-from tests.config_test import ConfigTest
+from tests.unit.config_test import ConfigTest
 
 
 class TestCorDimCalculateHeviside(unittest.TestCase, ConfigTest):

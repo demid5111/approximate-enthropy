@@ -1,6 +1,7 @@
 from math import floor
 
 import numpy as np
+import pandas as pd
 
 from src.utils.supporting import CalculationType
 
@@ -41,8 +42,20 @@ class Entropy:
     report_cls = None
 
     @staticmethod
+    def read_df(file_name, delimeter=b'.'):
+        return pd.read_table(file_name,
+                             sep='\n',
+                             dtype=np.float64,
+                             decimal=delimeter,
+                             header=None)
+
+    @staticmethod
     def read_series(file_name, use_threshold, threshold_value):
-        res = np.loadtxt(file_name, dtype=np.float64)
+        try:
+            df = Entropy.read_df(file_name)
+        except ValueError:
+            df = Entropy.read_df(file_name, delimeter=b',')
+        res = df.values[:, 0]
         if use_threshold:
             assert res.shape[0] >= threshold_value, \
                 'Sample length is too small. Need more than {}'.format(str(threshold_value))
@@ -163,11 +176,13 @@ class Entropy:
             step_size = 1
         assert window_size <= len(u_list), "Window size can't be bigger than the size of the overall sequence"
         windows = Entropy.slice_by_window(u_list, window_size, step_size)
-        deviations = Entropy.calculate_deviations(windows)
-        max_distances = Entropy.calculate_distances(calculation_type, deviations, dev_coef_value, windows)
+        max_distances = None
+        if calculation_type:
+            deviations = Entropy.calculate_deviations(windows)
+            max_distances = Entropy.calculate_distances(calculation_type, deviations, dev_coef_value, windows)
         averages = Entropy.calculate_averages(windows)
 
-        return windows, averages, max_distances, window_size, step_size
+        return windows, averages, max_distances, len(u_list)
 
     @staticmethod
     def calculate_similarity(m, seq, r):
@@ -191,15 +206,17 @@ class Entropy:
         raise NotImplementedError('Each entropy type should have its own calculate method')
 
     @classmethod
-    def prepare_calculate_windowed(cls, m, file_name, calculation_type, dev_coef_value, use_threshold,
-                                   threshold_value, window_size=None, step_size=None):
+    def prepare_calculate_windowed(cls, m, file_name,
+                                   use_threshold, threshold_value,
+                                   window_size=None, step_size=None,
+                                   calculation_type=None, dev_coef_value=None):
         if not cls.report_cls:
             raise NotImplementedError('Any Entropy should have its own report type')
         res_report = cls.report_cls()
         res_report.set_file_name(file_name)
         res_report.set_dimension(m)
         try:
-            seq_list, average_rr_list, r_val_list, window_size, step_size = Entropy.prepare_windows_calculation(
+            seq_list, average_rr_list, r_val_list, seq_len = Entropy.prepare_windows_calculation(
                 file_name,
                 calculation_type,
                 dev_coef_value,
@@ -207,15 +224,24 @@ class Entropy:
                 threshold_value,
                 window_size,
                 step_size)
-            apen_results = [cls.calculate(m=m, seq=seq_list[i], r=r_val_list[i]) for i in range(len(seq_list))]
-            res_report.set_window_size(window_size)
-            res_report.set_step_size(step_size)
+
+            en_results = []
+            for i in range(len(seq_list)):
+                calc_kwargs = dict(m=m, seq=seq_list[i])
+                if r_val_list is not None:
+                    calc_kwargs['r'] = r_val_list[i]
+                en_results.append(cls.calculate(**calc_kwargs))
         except (ValueError, AssertionError):
             res_report.set_error("Error! For file {}".format(file_name))
             return res_report
 
+        res_report.set_seq_len(seq_len)
+        res_report.set_window_size(window_size)
+        res_report.set_step_size(step_size)
         res_report.set_avg_rr(average_rr_list)
-        res_report.set_result_values(apen_results)
-        res_report.set_r_values(r_val_list)
+        res_report.set_result_values(en_results)
+
+        if r_val_list is not None:
+            res_report.set_r_values(r_val_list)
 
         return res_report

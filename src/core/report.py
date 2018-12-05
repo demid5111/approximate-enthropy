@@ -49,6 +49,12 @@ class IReport:
     def get_file_name(self):
         return self.file_name
 
+    def get_seq_len(self):
+        return self.seq_len
+
+    def set_seq_len(self, new_len):
+        self.seq_len = new_len
+
     def set_error(self, msg):
         self.err_msg = msg
 
@@ -107,25 +113,25 @@ class EnReport(IReport):
 class ApEnReport(EnReport):
     prefix = 'ap_en'
 
-    @staticmethod
-    def get_prefix():
-        return ApEnReport.prefix
+    @classmethod
+    def get_prefix(cls):
+        return cls.prefix
 
 
 class SampEnReport(EnReport):
     prefix = 'samp_en'
 
-    @staticmethod
-    def get_prefix():
-        return SampEnReport.prefix
+    @classmethod
+    def get_prefix(cls):
+        return cls.prefix
 
 
 class CorDimReport(IReport):
     prefix = 'cor_dim'
 
-    @staticmethod
-    def get_prefix():
-        return CorDimReport.prefix
+    @classmethod
+    def get_prefix(cls):
+        return cls.prefix
 
     def set_radius(self, r):
         self.r = r
@@ -151,9 +157,9 @@ class CorDimReport(IReport):
 class FracDimReport(IReport):
     prefix = 'frac_dim'
 
-    @staticmethod
-    def get_prefix():
-        return FracDimReport.prefix
+    @classmethod
+    def get_prefix(cls):
+        return cls.prefix
 
     def set_max_k(self, k):
         self.max_k = k
@@ -176,9 +182,50 @@ class FracDimReport(IReport):
         return res_dic
 
 
+class PermutationEntropyReport(IReport):
+    prefix = 'per_en'
+
+    def __init__(self):
+        super().__init__()
+        self.avg_rr_values = []
+
+    def set_avg_rr(self, rr_list):
+        self.avg_rr_values = rr_list
+
+    def get_avg_rr_values(self):
+        return self.avg_rr_values
+
+    @classmethod
+    def get_prefix(cls):
+        return cls.prefix
+
+    def get_avg_rr_value(self, idx):
+        return self.avg_rr_values[idx]
+
+    def get_report_list_per_window(self, window_idx):
+        if self.is_error():
+            return ['error', ] * 2
+        result = str('{0:.10f}'.format(self.get_result_value(window_idx)))
+        rr = self.get_avg_rr_value(window_idx)
+        return [str(result), str(rr)]
+
+    def to_json(self):
+        if self.is_error():
+            return {'error': 'true'}
+        res_dic = super().to_json()
+        res_dic['avg_rr_values'] = self.get_avg_rr_values()
+        return res_dic
+
+
 class ReportManager:
-    @staticmethod
-    def prepare_write_report(file_name="results/results.csv", res_dic=None, analysis_types=()):
+    report_path = None
+
+    @classmethod
+    def get_report_path(cls):
+        return cls.report_path
+
+    @classmethod
+    def prepare_write_report(cls, file_name="results/results.csv", res_dic=None, analysis_types=()):
         if not res_dic:
             print("Error in generating report")
 
@@ -188,10 +235,12 @@ class ReportManager:
         for f_name, reports in res_dic.items():
             analysis_lines.extend(ReportManager.prepare_analysis_report_single_file(f_name, reports))
         os.makedirs(os.path.join(ARTIFACTS_DIR, os.path.dirname(file_name)), exist_ok=True)
-        ReportManager.write_report(os.path.join(ARTIFACTS_DIR, file_name), header_lines, analysis_lines)
+        cls.report_path = os.path.join(ARTIFACTS_DIR, file_name)
+        ReportManager.write_report(cls.report_path, header_lines, analysis_lines)
 
     @staticmethod
     def write_report(file_name="results/results.csv", header_lines=(), analysis_lines=()):
+        print('Saving to {}'.format(file_name))
         with open(file_name, 'w') as resultFile:
             wr = csv.writer(resultFile, delimiter=',')
             wr.writerows(header_lines)
@@ -211,6 +260,8 @@ class ReportManager:
                 analysis_names.append(AnalysisType.AP_EN)
             if isinstance(r, SampEnReport):
                 analysis_names.append(AnalysisType.SAMP_EN)
+            if isinstance(r, PermutationEntropyReport):
+                analysis_names.append(AnalysisType.PERM_EN)
         return analysis_names
 
     @staticmethod
@@ -233,6 +284,10 @@ class ReportManager:
             frac_dim_column_names = ['Result', 'Max_K']
             frac_dim_names = ['{}_{}'.format(FracDimReport.get_prefix(), n) for n in frac_dim_column_names]
             column_names.extend(frac_dim_names)
+        if AnalysisType.PERM_EN in analysis_types:
+            perm_en_column_names = ['Entropy', 'Average_RR']
+            perm_en_names = ['{}_{}'.format(PermutationEntropyReport.get_prefix(), n) for n in perm_en_column_names]
+            column_names.extend(perm_en_names)
         return column_names
 
     @staticmethod
@@ -243,9 +298,29 @@ class ReportManager:
         # get sample size of window and step
         any_file = list(res_dic.keys())[0]
         any_report = res_dic[any_file][0]
-        header_lines.append(['Dimension', any_report.get_dimension()])
-        header_lines.append(['Window size', any_report.get_window_size()])
-        header_lines.append(['Step size', any_report.get_step_size()])
+        try:
+            dimension = any_report.get_dimension()
+        except AttributeError:
+            dimension = 'error'
+        header_lines.append(['Dimension', dimension])
+
+        try:
+            length = any_report.get_seq_len()
+        except AttributeError:
+            length = 'error'
+        header_lines.append(['Number of points', length])
+
+        try:
+            window_size = any_report.get_window_size()
+        except AttributeError:
+            window_size = 'error'
+        header_lines.append(['Window size', window_size])
+
+        try:
+            step_size = any_report.get_step_size()
+        except AttributeError:
+            step_size = 'error'
+        header_lines.append(['Step size', step_size])
 
         column_names = ReportManager.compile_column_names(analysis_types)
         header_lines.append(column_names)
@@ -269,6 +344,7 @@ class ReportManager:
             samp_en_values = []
             cor_dim_values = []
             frac_dim_values = []
+            perm_en_values = []
             for report in reports:
                 if isinstance(report, ApEnReport):
                     ap_en_values = report.get_report_list_per_window(index)
@@ -278,6 +354,8 @@ class ReportManager:
                     cor_dim_values = report.get_report_list_per_window(index)
                 elif isinstance(report, FracDimReport):
                     frac_dim_values = report.get_report_list_per_window(index)
+                elif isinstance(report, PermutationEntropyReport):
+                    perm_en_values = report.get_report_list_per_window(index)
             # the order is important
             # the biggest possible order
             # file_name, window_index,
@@ -285,9 +363,11 @@ class ReportManager:
             # samp_en_res, samp_en_r, samp_en_avg_rr,
             # cordim_res, cordim_radius,
             # fracdim_res, fracdim_start, fracdim_interval, fracdim_max_k, fracdim_max_m
+            # perm_en_res, perm_en_avg_rr
             line_values.extend(ap_en_values)
             line_values.extend(samp_en_values)
             line_values.extend(cor_dim_values)
             line_values.extend(frac_dim_values)
+            line_values.extend(perm_en_values)
             analysis_lines.append(line_values)
         return analysis_lines

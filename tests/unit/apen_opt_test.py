@@ -8,7 +8,7 @@ from src.core.apen_opt import ApproximateEntropy
 from src.core.en_opt import RCalculator
 
 from src.utils.supporting import CalculationType
-from tests.config_test import ConfigTest
+from tests.unit.config_test import ConfigTest
 
 
 class TestApEnOptDeviation(unittest.TestCase, ConfigTest):
@@ -95,10 +95,14 @@ class TestApEnPrepareCalculateApEn(unittest.TestCase, ConfigTest):
         u_list = self.apEn.read_series(os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'), False, 0)
         deviation = self.apEn.calculate_deviation(u_list)
         r = RCalculator.calculate_r(CalculationType.COMPLEX, deviation, 0.5, u_list)
-        self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
-                                                CalculationType.CONST, 0, False, 0)
+        self.apEn.prepare_calculate_windowed(m=2,
+                                             file_name=os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
+                                             calculation_type=CalculationType.CONST,
+                                             dev_coef_value=0,
+                                             use_threshold=False,
+                                             threshold_value=0)
         self.assertEqual(mock_calculate_r.call_args[0][0], CalculationType.CONST)
-        self.assertEqual(mock_calculate_r.call_args[0][1], 1.4118572032582124)
+        self.assertEqual(mock_calculate_r.call_args[0][1], 1.4118572032582175)
         self.assertEqual(mock_calculate_r.call_args[0][2], 0)
         np.testing.assert_array_equal(mock_calculate_r.call_args[0][3], u_list)
 
@@ -114,69 +118,114 @@ class TestApEnCalculateOverallApEn(unittest.TestCase, ConfigTest):
         self.apEn = ApproximateEntropy()
 
     def test_calculate_apen_2_const(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
-                                                    CalculationType.CONST, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
+                                                 calculation_type=CalculationType.CONST,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12211, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_2_dev(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
-                                                    CalculationType.DEV, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
+                                                 calculation_type=CalculationType.DEV,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12365, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_2_complex(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
-                                                    CalculationType.COMPLEX, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_2.txt'),
+                                                 calculation_type=CalculationType.COMPLEX,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12003, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_4_const(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
-                                                    CalculationType.CONST, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
+                                                 calculation_type=CalculationType.CONST,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12211, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_4_dev(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
-                                                    CalculationType.DEV, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
+                                                 calculation_type=CalculationType.DEV,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12365, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_4_complex(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
-                                                    CalculationType.COMPLEX, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_4.txt'),
+                                                 calculation_type=CalculationType.COMPLEX,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.11040, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_10_const(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
-                                                    CalculationType.CONST, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
+                                                 calculation_type=CalculationType.CONST,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12211, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_10_dev(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
-                                                    CalculationType.DEV, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
+                                                 calculation_type=CalculationType.DEV,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.12365, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_10_complex(self):
-        r = self.apEn.prepare_calculate_windowed(2, os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
-                                                    CalculationType.COMPLEX, 0.5, False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path, 'ApEn_amolituda_10.txt'),
+                                                 calculation_type=CalculationType.COMPLEX,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.15675, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_210_const(self):
-        r = self.apEn.prepare_calculate_windowed(2,
-                                                    os.path.join(self.resource_path, 'ApEn_amolituda_random_2-10.txt'),
-                                                    CalculationType.CONST, 0.5,
-                                                    False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path,
+                                                                        'ApEn_amolituda_random_2-10.txt'),
+                                                 calculation_type=CalculationType.CONST,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.96967, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_210_dev(self):
-        r = self.apEn.prepare_calculate_windowed(2,
-                                                    os.path.join(self.resource_path, 'ApEn_amolituda_random_2-10.txt'),
-                                                    CalculationType.DEV, 0.5,
-                                                    False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path,
+                                                                        'ApEn_amolituda_random_2-10.txt'),
+                                                 calculation_type=CalculationType.DEV,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.67897, places=4, msg='incorrect ApEnOpt')
 
     def test_calculate_apen_210_complex(self):
-        r = self.apEn.prepare_calculate_windowed(2,
-                                                    os.path.join(self.resource_path, 'ApEn_amolituda_random_2-10.txt'),
-                                                    CalculationType.COMPLEX, 0.5,
-                                                    False, 0)
+        r = self.apEn.prepare_calculate_windowed(m=2,
+                                                 file_name=os.path.join(self.resource_path,
+                                                                        'ApEn_amolituda_random_2-10.txt'),
+                                                 calculation_type=CalculationType.COMPLEX,
+                                                 dev_coef_value=0.5,
+                                                 use_threshold=False,
+                                                 threshold_value=0)
         self.assertAlmostEqual(r.get_result_value(0), 0.26964, places=4, msg='incorrect ApEnOpt')
 
 
