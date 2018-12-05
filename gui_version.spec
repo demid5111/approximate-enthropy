@@ -9,7 +9,11 @@ a = Analysis(['gui_version.py'],
              datas=[],
              hiddenimports=[
                 'PyQt5',
-                'PyQt5.sip'
+                'PyQt5.sip',
+                'pandas',
+                'pandas._libs.tslibs.np_datetime',
+                'pandas._libs.tslibs.nattype',
+                'pandas._libs.skiplist',
              ],
              hookspath=[],
              runtime_hooks=[],
@@ -49,7 +53,7 @@ elif sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linu
             strip=False,
             upx=True,
             runtime_tmpdir=None,
-            console=False,
+            console=True,
             icon='assets/icon.ico')
 
 # Package the executable file into .app if on OS X
