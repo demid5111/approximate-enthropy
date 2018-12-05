@@ -1,20 +1,6 @@
-language: python
-
-os:
-  - linux
-  - osx
-
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
-      language: python
-      python: 3.6.2
-    - os: osx
-      sudo: required
-      language: generic
-      osx_image: xcode9.4
+language: generic
+os: osx
+osx_image: xcode9.4
 
 branches:
   only:
@@ -29,12 +15,15 @@ branches:
 tags:
   enabled: false
 
-install:
-  - ./.travis/install.sh
+before_install:
+  - nvm ls
+  - nvm install lts/carbon
+  - nvm use lts/carbon
+  - node --version
 
-before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "herbstluftwm &" ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sleep 1 ; fi
+install:
+  - npm install -g create-dmg
+  - pip3 install -r requirements.txt
 
 stages:
   - test
@@ -43,14 +32,12 @@ stages:
 jobs:
   include:
     - stage: test
-      script:
-        - python3 -m unittest discover -p *_test.py
-        - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then python3 -m pytest tests/gui ; fi
+      script: python3 -m unittest discover -p *_test.py
     - stage: deploy
       script:
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyinstaller --noconsole gui_version.spec ; fi
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then create-dmg dist/HeartAlgo-Analyzer.app || true ; fi
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then zip HeartAlgo-Analyzer.zip HeartAlgo-Analyzer\ 0.0.0.dmg ; fi
+        - pyinstaller --noconsole gui_version.spec
+        - create-dmg dist/HeartAlgo-Analyzer.app || true
+        - zip HeartAlgo-Analyzer.zip HeartAlgo-Analyzer\ 0.0.0.dmg
       deploy:
         provider: releases
         api_key:
@@ -60,7 +47,7 @@ jobs:
         name: osx build $TRAVIS_BUILD_NUMBER from $(date +'%d.%m.%Y %R')
         on:
           all_branches: true
-          condition: $TRAVIS_BRANCH =~ ^releases\/.*$ AND "$TRAVIS_OS_NAME" == "osx"
+          condition: $TRAVIS_BRANCH =~ ^releases\/.*$
 
 addons:
   sonarcloud:
