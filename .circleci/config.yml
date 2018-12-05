@@ -44,7 +44,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            xvfb-run python3 -m pytest tests/gui
+            python3 -m pytest tests/gui
 
       - store_artifacts:
           path: test-reports
