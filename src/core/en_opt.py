@@ -232,7 +232,7 @@ class Entropy:
                 if r_val_list is not None:
                     calc_kwargs['r'] = r_val_list[i]
                 en_results.append(cls.calculate(**calc_kwargs))
-        except Exception:
+        except Exception as e:
             res_report.set_error("Error! For file {}".format(file_name))
             return res_report
 
