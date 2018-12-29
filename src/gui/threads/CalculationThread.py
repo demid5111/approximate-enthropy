@@ -76,47 +76,42 @@ class CalculationThread(QThread):
         self.full_job = len(files_list) * num_algos
 
         self.job_index = 0
+        workers = []
         for file_name in files_list:
             if is_cord_dim_enabled:
-                worker = GeneralWorker(CorDim.prepare_calculate_window_cor_dim,
-                                       file_name, dimension, cor_dim_radius, window_size, step_size)
-                self.threadpool.start(worker)
-                worker.signals.result.connect(self.receive_report)
+                workers.append(GeneralWorker(CorDim.prepare_calculate_window_cor_dim,
+                                             file_name, dimension, cor_dim_radius, window_size, step_size))
 
             if is_frac_dim_enabled:
-                worker = GeneralWorker(FracDim.prepare_calculate_window_frac_dim,
-                                       file_name, fd_max_k,
-                                       window_size, step_size)
-                self.threadpool.start(worker)
-                worker.signals.result.connect(self.receive_report)
+                workers.append(GeneralWorker(FracDim.prepare_calculate_window_frac_dim,
+                                             file_name, fd_max_k,
+                                             window_size, step_size))
 
             if is_samp_en:
-                worker = GeneralWorker(SampleEntropy.prepare_calculate_windowed,
-                                       dimension, file_name,
-                                       en_use_threshold, en_threshold_value,
-                                       window_size, step_size,
-                                       en_calculation_type, en_dev_coef_value)
-                self.threadpool.start(worker)
-                worker.signals.result.connect(self.receive_report)
+                workers.append(GeneralWorker(SampleEntropy.prepare_calculate_windowed,
+                                             dimension, file_name,
+                                             en_use_threshold, en_threshold_value,
+                                             window_size, step_size,
+                                             en_calculation_type, en_dev_coef_value))
 
             if is_ap_en:
-                worker = GeneralWorker(ApproximateEntropy.prepare_calculate_windowed,
-                                       dimension, file_name,
-                                       en_use_threshold, en_threshold_value,
-                                       window_size, step_size,
-                                       en_calculation_type, en_dev_coef_value)
-                self.threadpool.start(worker)
-                worker.signals.result.connect(self.receive_report)
+                workers.append(GeneralWorker(ApproximateEntropy.prepare_calculate_windowed,
+                                             dimension, file_name,
+                                             en_use_threshold, en_threshold_value,
+                                             window_size, step_size,
+                                             en_calculation_type, en_dev_coef_value))
 
             if is_pertropy_enabled:
-                worker = GeneralWorker(PermutationEntropy.prepare_calculate_windowed,
-                                       dimension, file_name,
-                                       en_use_threshold, en_threshold_value,
-                                       window_size, step_size,
-                                       None, None,
-                                       is_pertropy_normalized)
-                self.threadpool.start(worker)
-                worker.signals.result.connect(self.receive_report)
+                workers.append(GeneralWorker(PermutationEntropy.prepare_calculate_windowed,
+                                             dimension, file_name,
+                                             en_use_threshold, en_threshold_value,
+                                             window_size, step_size,
+                                             None, None,
+                                             is_pertropy_normalized))
+
+        for worker in workers:
+            self.threadpool.start(worker)
+            worker.signals.result.connect(self.receive_report)
 
     def on_threads_completed(self):
         self.threadpool.waitForDone()

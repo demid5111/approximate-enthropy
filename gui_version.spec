@@ -9,7 +9,11 @@ a = Analysis(['gui_version.py'],
              datas=[],
              hiddenimports=[
                 'PyQt5',
-                'PyQt5.sip'
+                'PyQt5.sip',
+                'pandas',
+                'pandas._libs.tslibs.np_datetime',
+                'pandas._libs.tslibs.nattype',
+                'pandas._libs.skiplist',
              ],
              hookspath=[],
              runtime_hooks=[],
