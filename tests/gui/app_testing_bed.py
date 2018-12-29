@@ -46,9 +46,15 @@ class AppTestingBed:
         return self.window.table_widget.file_chooser_widget
 
     def choose_any_file(self):
+        self.choose_file(os.path.join('data', 'ApEn_1.txt'))
+
+    def choose_zero_deviation_file(self):
+        self.choose_file(os.path.join('data', 'ApEn_0.txt'))
+
+    def choose_file(self, relative_path):
         cur_path = os.path.realpath(__file__)
         path_to_root = os.path.abspath(os.path.join(cur_path, os.pardir, os.pardir, os.pardir))
-        path_to_file = os.path.join(path_to_root, 'data', 'ApEn_1.txt')
+        path_to_file = os.path.join(path_to_root, relative_path)
         self.get_file_chooser().file_names_edit.setText(path_to_file)
         self.window.table_widget.on_new_files_chosen()
 

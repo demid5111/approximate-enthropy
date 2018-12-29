@@ -59,6 +59,18 @@ class TestPermuteEntropyExtractPattern(unittest.TestCase):
     def test_extract_pattern_4(self):
         npt.assert_equal((0, 1, 2), self.permEn.extract_pattern(np.array([-3, 0, 1])))
 
+    def test_extract_pattern_5(self):
+        npt.assert_equal((1, 0, 2, 3), self.permEn.extract_pattern(np.array([2, 1, 2, 3])))
+
+    def test_extract_pattern_6(self):
+        npt.assert_equal((1, 0, 2, 3), self.permEn.extract_pattern(np.array([2, 1, 2, 2])))
+
+    def test_extract_pattern_7(self):
+        npt.assert_equal((2, 1, 0, 3), self.permEn.extract_pattern(np.array([2, 1, 0, 2])))
+
+    def test_extract_pattern_8(self):
+        npt.assert_equal((0, 1, 2, 3), self.permEn.extract_pattern(np.array([2, 2, 2, 2])))
+
 
 if __name__ == '__main__':
     unittest.main()
