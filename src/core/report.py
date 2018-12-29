@@ -188,6 +188,7 @@ class PermutationEntropyReport(IReport):
     def __init__(self):
         super().__init__()
         self.avg_rr_values = []
+        self.normalized_values = []
 
     def set_avg_rr(self, rr_list):
         self.avg_rr_values = rr_list
@@ -202,18 +203,32 @@ class PermutationEntropyReport(IReport):
     def get_avg_rr_value(self, idx):
         return self.avg_rr_values[idx]
 
+    def get_normalized_result_value(self, idx):
+        return self.normalized_values[idx]
+
     def get_report_list_per_window(self, window_idx):
         if self.is_error():
             return ['error', ] * 2
         result = str('{0:.10f}'.format(self.get_result_value(window_idx)))
+        try:
+            normalized_result = str('{0:.10f}'.format(self.get_normalized_result_value(window_idx)))
+        except IndexError:
+            normalized_result = -1
         rr = self.get_avg_rr_value(window_idx)
-        return [str(result), str(rr)]
+        return [str(result), str(normalized_result), str(rr)]
+
+    def set_normalized_values(self, values):
+        self.normalized_values = values
+
+    def get_normalized_values(self):
+        return self.normalized_values
 
     def to_json(self):
         if self.is_error():
             return {'error': 'true'}
         res_dic = super().to_json()
         res_dic['avg_rr_values'] = self.get_avg_rr_values()
+        res_dic['normalized_values'] = self.get_avg_rr_values()
         return res_dic
 
 
@@ -285,7 +300,7 @@ class ReportManager:
             frac_dim_names = ['{}_{}'.format(FracDimReport.get_prefix(), n) for n in frac_dim_column_names]
             column_names.extend(frac_dim_names)
         if AnalysisType.PERM_EN in analysis_types:
-            perm_en_column_names = ['Entropy', 'Average_RR']
+            perm_en_column_names = ['Entropy', 'Normalized_Entropy','Average_RR']
             perm_en_names = ['{}_{}'.format(PermutationEntropyReport.get_prefix(), n) for n in perm_en_column_names]
             column_names.extend(perm_en_names)
         return column_names
@@ -363,7 +378,7 @@ class ReportManager:
             # samp_en_res, samp_en_r, samp_en_avg_rr,
             # cordim_res, cordim_radius,
             # fracdim_res, fracdim_start, fracdim_interval, fracdim_max_k, fracdim_max_m
-            # perm_en_res, perm_en_avg_rr
+            # perm_en_res, perm_en_normalized_res, perm_en_avg_rr
             line_values.extend(ap_en_values)
             line_values.extend(samp_en_values)
             line_values.extend(cor_dim_values)

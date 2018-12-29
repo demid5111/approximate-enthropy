@@ -28,6 +28,9 @@ class AppTestingBed:
         self._click(self.window.table_widget.is_use_pertropy_cb)
 
     def press_cordim_cb(self):
+        self._click(self.window.table_widget.pertropy_widget.normalize_cb)
+
+    def press_norm_permen_cb(self):
         self._click(self.window.table_widget.is_use_cor_dim_cb)
 
     def press_fracdim_cb(self):

@@ -7,6 +7,7 @@ from src.gui.widgets.cor_dim_widget import CorDimWidget
 from src.gui.widgets.entropy_widget import EntropyWidget
 from src.gui.widgets.file_chooser_widget import FileChooserWidget
 from src.gui.widgets.frac_dim_widget import FracDimWidget
+from src.gui.widgets.pertropy_widget import PertropyWidget
 from src.gui.widgets.window_analysis_widget import WindowAnalysisWidget
 
 
@@ -62,6 +63,8 @@ class ApEnWidget(QWidget):
         self.is_use_pertropy_cb.setChecked(self.is_calc_pertropy)
         self.is_use_pertropy_cb.clicked.connect(self.toggle_calc_pertropy_cb)
 
+        self.pertropy_widget = PertropyWidget(self)
+
         self.is_use_cor_dim_cb = QCheckBox('Calculate correlation dimension?', self)
         self.is_calc_cor_dim = True
         self.is_use_cor_dim_cb.setChecked(self.is_calc_cor_dim)
@@ -84,21 +87,22 @@ class ApEnWidget(QWidget):
         grid.addWidget(self.ent_widget, 4, 1)
 
         grid.addWidget(self.is_use_pertropy_cb, 5, 0)
+        grid.addWidget(self.pertropy_widget, 6, 1)
 
         self.cor_dim_widget = CorDimWidget(self)
-        grid.addWidget(self.is_use_cor_dim_cb, 6, 0)
-        grid.addWidget(self.cor_dim_widget, 7, 1)
+        grid.addWidget(self.is_use_cor_dim_cb, 7, 0)
+        grid.addWidget(self.cor_dim_widget, 8, 1)
 
         self.frac_dim_widget = FracDimWidget(self)
-        grid.addWidget(self.is_use_frac_dim_cb, 8, 0)
-        grid.addWidget(self.frac_dim_widget, 9, 1)
+        grid.addWidget(self.is_use_frac_dim_cb, 9, 0)
+        grid.addWidget(self.frac_dim_widget, 10, 1)
 
         self.file_chooser_widget = FileChooserWidget(self, self.fileName)
         self.file_chooser_widget.new_files_chosen.connect(self.on_new_files_chosen)
         self.file_chooser_widget.erased_files.connect(self.on_erased_files)
-        grid.addWidget(self.file_chooser_widget, 10, 0, 1, 3)
+        grid.addWidget(self.file_chooser_widget, 11, 0, 1, 3)
 
-        grid.addWidget(self.run_calculate, 13, 0, 1, 3)
+        grid.addWidget(self.run_calculate, 14, 0, 1, 3)
 
         # Creating a label
         self.progress_label = QLabel('Calculation progress', self)
@@ -107,8 +111,8 @@ class ApEnWidget(QWidget):
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setMaximum(100)
         self.progress_bar.setMinimum(0)
-        grid.addWidget(self.progress_label, 17, 0)
-        grid.addWidget(self.progress_bar, 17, 1)
+        grid.addWidget(self.progress_label, 18, 0)
+        grid.addWidget(self.progress_bar, 18, 1)
 
         return grid
 
@@ -125,6 +129,7 @@ class ApEnWidget(QWidget):
         is_cord_dim_enabled = self.is_use_cor_dim_cb.isChecked()
         is_frac_dim_enabled = self.is_use_frac_dim_cb.isChecked()
         is_pertropy_enabled = self.is_use_pertropy_cb.isChecked()
+        is_pertropy_normalized = self.pertropy_widget.is_normalize_used
 
         files_list = self.file_chooser_widget.get_file_names()
         dimension = int(self.mEdit.text())
@@ -143,7 +148,7 @@ class ApEnWidget(QWidget):
                                              window_size, step_size,
                                              cor_dim_radius, is_samp_en, is_ap_en, en_use_threshold,
                                              en_threshold_value, en_dev_coef_value, en_calculation_type,
-                                             is_frac_dim_enabled, fd_max_k, is_pertropy_enabled)
+                                             is_frac_dim_enabled, fd_max_k, is_pertropy_enabled, is_pertropy_normalized)
 
         self.set_in_progress(True)
         self.calc_thread.done.connect(self.show_message)
@@ -181,6 +186,8 @@ class ApEnWidget(QWidget):
 
     def toggle_calc_pertropy_cb(self):
         self.is_calc_pertropy = not self.is_calc_pertropy
+        self.check_run_button_state()
+        self.pertropy_widget.setHidden(not self.is_calc_pertropy)
 
     def toggle_window_checkbox(self):
         self.is_windows_enabled = not self.is_windows_enabled

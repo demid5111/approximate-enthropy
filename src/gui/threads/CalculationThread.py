@@ -19,7 +19,7 @@ class CalculationThread(QThread):
                  window_size, step_size,
                  cor_dim_radius, is_samp_en, is_ap_en, en_use_threshold,
                  en_threshold_value, en_dev_coef_value, en_calculation_type,
-                 is_frac_dim_enabled, fd_max_k, is_pertropy_enabled):
+                 is_frac_dim_enabled, fd_max_k, is_pertropy_enabled, is_pertropy_normalized):
         QThread.__init__(self)
         self.is_cord_dim_enabled = is_cord_dim_enabled
         self.files_list = files_list
@@ -36,6 +36,7 @@ class CalculationThread(QThread):
         self.is_frac_dim_enabled = is_frac_dim_enabled
         self.fd_max_k = fd_max_k
         self.is_pertropy_enabled = is_pertropy_enabled
+        self.is_pertropy_normalized = is_pertropy_normalized
 
         self.res_dic = {}
         self.mutex = QMutex()
@@ -51,12 +52,14 @@ class CalculationThread(QThread):
                   self.dimension, self.window_size, self.step_size,
                   self.cor_dim_radius, self.is_samp_en, self.is_ap_en, self.en_use_threshold,
                   self.en_threshold_value, self.en_dev_coef_value, self.en_calculation_type,
-                  self.is_frac_dim_enabled, self.fd_max_k, self.is_pertropy_enabled)
+                  self.is_frac_dim_enabled, self.fd_max_k,
+                  self.is_pertropy_enabled, self.is_pertropy_normalized)
 
     def calc(self, is_cord_dim_enabled, files_list, dimension, window_size, step_size,
              cor_dim_radius=0, is_samp_en=False, is_ap_en=False, en_use_threshold=False,
              en_threshold_value=0, en_dev_coef_value=0, en_calculation_type=0,
-             is_frac_dim_enabled=False, fd_max_k=0, is_pertropy_enabled=False):
+             is_frac_dim_enabled=False, fd_max_k=0,
+             is_pertropy_enabled=False, is_pertropy_normalized=False):
         # calculate what is the denominator for progress
         # num files * number of analysis algos
         num_algos = 0
@@ -109,7 +112,9 @@ class CalculationThread(QThread):
                 worker = GeneralWorker(PermutationEntropy.prepare_calculate_windowed,
                                        dimension, file_name,
                                        en_use_threshold, en_threshold_value,
-                                       window_size, step_size)
+                                       window_size, step_size,
+                                       None, None,
+                                       is_pertropy_normalized)
                 self.threadpool.start(worker)
                 worker.signals.result.connect(self.receive_report)
 
