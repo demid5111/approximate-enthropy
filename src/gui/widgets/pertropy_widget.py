@@ -17,11 +17,11 @@ class PertropyWidget(QWidget):
         self.strides_cb = QCheckBox('Use strides', self)
         self.is_stride_used = True
         self.strides_cb.setChecked(self.is_stride_used)
-        # cb.clicked.connect(self.toggle_stride_checkbox)
-
+        self.strides_cb.clicked.connect(self.toggle_stride_checkbox)
         descr = 'stride (or step, "1" means<br>one after another)'
         self.stride_label = QLabel('<p style="text-align:right">{}</p>'.format(descr))
         self.stride_value = QLineEdit("2")
+        self.toggle_stride_checkbox()
 
         grid = QGridLayout()
         grid.addWidget(self.normalize_cb, 0, 0, 1, 3)
@@ -29,11 +29,17 @@ class PertropyWidget(QWidget):
         grid.addWidget(self.stride_label, 2, 1)
         grid.addWidget(self.stride_value, 2, 2)
 
-
         self.setLayout(grid)
 
     def toggle_normalize_cb(self):
         self.is_normalize_used = not self.is_normalize_used
+        self.normalize_cb.setChecked(self.is_normalize_used)
+
+    def toggle_stride_checkbox(self):
+        self.is_stride_used = not self.is_stride_used
+        self.strides_cb.setChecked(self.is_stride_used)
+        self.stride_label.setHidden(not self.is_stride_used)
+        self.stride_value.setHidden(not self.is_stride_used)
 
     def is_normalization_used(self):
         return self.is_normalize_used

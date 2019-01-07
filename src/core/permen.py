@@ -45,7 +45,22 @@ class PermutationEntropy(Entropy):
         :param seq: sequence with numbers
         :return: a tuple with indexes
         """
-        return tuple(np.argsort(seq))
+        res = tuple(np.argsort(seq))
+        if len(set(seq)) == len(seq):
+            return res
+
+        # there are duplicates
+        value_to_id = {}
+        new_id = 0
+        for el in sorted(seq):
+            try:
+                value_to_id[el]
+            except KeyError:
+                value_to_id[el] = new_id
+                new_id += 1
+            else:
+                pass
+        return tuple(value_to_id[el] for el in seq)
 
     @staticmethod
     def collect_pattern_frequency(seq, size, stride):
