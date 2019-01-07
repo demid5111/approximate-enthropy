@@ -23,15 +23,38 @@ class PermutationEntropy(Entropy):
 
     @staticmethod
     def extract_pattern(seq):
+        """
+        Extraction happens due to the following rule:
+        if the sequence contains repeating elements then all repeating elements get
+        the same rank (order number). For example:
+        [5,4,-1,5] is reflected as a pattern [2,1,0,2]
+
+        This is implemented according to:
+
+        @article{bian2012modified,
+          title={Modified permutation-entropy analysis of heartbeat dynamics},
+          author={Bian, Chunhua and Qin, Chang and Ma, Qianli DY and Shen, Qinghong},
+          journal={Physical Review E},
+          volume={85},
+          number={2},
+          pages={021906},
+          year={2012},
+          publisher={APS}
+        }
+
+        :param seq: sequence with numbers
+        :return: a tuple with indexes
+        """
         return tuple(np.argsort(seq))
 
     @staticmethod
-    def collect_pattern_frequency(seq, size):
+    def collect_pattern_frequency(seq, size, stride):
         patterns = []
         counts = []
-        num_elements = len(seq) - size + 1
+        stride = 1 if stride is None else stride
+        num_elements = len(seq) - stride * size + 1
         for idx in range(num_elements):
-            current_pattern = PermutationEntropy.extract_pattern(seq[idx:idx + size])
+            current_pattern = PermutationEntropy.extract_pattern(seq[idx:idx + stride * size: stride])
             try:
                 position = patterns.index(current_pattern)
             except ValueError:
@@ -42,8 +65,8 @@ class PermutationEntropy(Entropy):
         return np.array(counts) / num_elements, np.array(patterns)
 
     @staticmethod
-    def calculate(m, seq, r=None):
-        frequences, mapping = PermutationEntropy.collect_pattern_frequency(seq, m)
+    def calculate(m, seq, stride):
+        frequences, mapping = PermutationEntropy.collect_pattern_frequency(seq, m, stride)
         return -1 * np.dot(frequences, np.log2(frequences))
 
     @staticmethod
@@ -52,14 +75,14 @@ class PermutationEntropy(Entropy):
         calculating h small
         :return: normalized series
         """
-        return np.array(series)*(1/(n - 1))
+        return np.array(series) * (1 / (n - 1))
 
     @classmethod
     def prepare_calculate_windowed(cls, m, file_name,
                                    use_threshold, threshold_value,
                                    window_size=None, step_size=None,
                                    calculation_type=None, dev_coef_value=None,
-                                   normalize=False):
+                                   normalize=False, stride_size=None):
         if not cls.report_cls:
             raise NotImplementedError('Any Entropy should have its own report type')
         res_report = cls.report_cls()

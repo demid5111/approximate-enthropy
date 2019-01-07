@@ -81,26 +81,26 @@ class ApEnWidget(QWidget):
         grid = QGridLayout()
         grid.addWidget(mLabel, 0, 0)
         grid.addWidget(self.mEdit, 0, 1)
-        grid.addWidget(self.window_cb, 1, 0)
-        grid.addWidget(self.window_analysis_widget, 2, 1)
-        grid.addWidget(self.is_use_ent_cb, 3, 0)
-        grid.addWidget(self.ent_widget, 4, 1)
+        grid.addWidget(self.window_cb, 0, 3)
+        grid.addWidget(self.window_analysis_widget, 1, 4)
+        grid.addWidget(self.is_use_ent_cb, 2, 0)
+        grid.addWidget(self.ent_widget, 3, 1)
 
-        grid.addWidget(self.is_use_pertropy_cb, 5, 0)
-        grid.addWidget(self.pertropy_widget, 6, 1)
+        grid.addWidget(self.is_use_pertropy_cb, 2, 3)
+        grid.addWidget(self.pertropy_widget, 3, 4)
 
         self.cor_dim_widget = CorDimWidget(self)
-        grid.addWidget(self.is_use_cor_dim_cb, 7, 0)
-        grid.addWidget(self.cor_dim_widget, 8, 1)
+        grid.addWidget(self.is_use_cor_dim_cb, 4, 3)
+        grid.addWidget(self.cor_dim_widget, 5, 4)
 
         self.frac_dim_widget = FracDimWidget(self)
-        grid.addWidget(self.is_use_frac_dim_cb, 9, 0)
-        grid.addWidget(self.frac_dim_widget, 10, 1)
+        grid.addWidget(self.is_use_frac_dim_cb, 6, 3)
+        grid.addWidget(self.frac_dim_widget, 7, 4)
 
         self.file_chooser_widget = FileChooserWidget(self, self.fileName)
         self.file_chooser_widget.new_files_chosen.connect(self.on_new_files_chosen)
         self.file_chooser_widget.erased_files.connect(self.on_erased_files)
-        grid.addWidget(self.file_chooser_widget, 11, 0, 1, 3)
+        grid.addWidget(self.file_chooser_widget, 4, 0, 5, 3)
 
         grid.addWidget(self.run_calculate, 14, 0, 1, 3)
 
