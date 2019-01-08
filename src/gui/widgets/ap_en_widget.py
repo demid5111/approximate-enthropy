@@ -130,6 +130,7 @@ class ApEnWidget(QWidget):
         is_frac_dim_enabled = self.is_use_frac_dim_cb.isChecked()
         is_pertropy_enabled = self.is_use_pertropy_cb.isChecked()
         is_pertropy_normalized = self.pertropy_widget.is_normalize_used
+        is_pertropy_stride = self.pertropy_widget.is_stride_used
 
         files_list = self.file_chooser_widget.get_file_names()
         dimension = int(self.mEdit.text())
@@ -143,12 +144,14 @@ class ApEnWidget(QWidget):
                                                                                         if is_ent_enabled else [0, 0, 0,
                                                                                                                 0])
         fd_max_k = self.get_frac_dim_parameters() if is_frac_dim_enabled else 0
+        pertropy_stride = self.pertropy_widget.get_stride() if is_pertropy_stride else 1
 
         self.calc_thread = CalculationThread(is_cord_dim_enabled, files_list, dimension,
                                              window_size, step_size,
                                              cor_dim_radius, is_samp_en, is_ap_en, en_use_threshold,
                                              en_threshold_value, en_dev_coef_value, en_calculation_type,
-                                             is_frac_dim_enabled, fd_max_k, is_pertropy_enabled, is_pertropy_normalized)
+                                             is_frac_dim_enabled, fd_max_k,
+                                             is_pertropy_enabled, is_pertropy_normalized, pertropy_stride)
 
         self.set_in_progress(True)
         self.calc_thread.done.connect(self.show_message)

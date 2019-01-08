@@ -66,7 +66,7 @@ def test_permen_wo_windows_wo_norm_w_strides(qtbot):
     test_app.press_cordim_cb()
     test_app.press_norm_permen_cb()
     test_app.press_strides_permen_cb()
-    test_app.set_strides_permen(2)
+    test_app.set_strides_permen('2')
     test_app.press_fracdim_cb()
 
     assert not test_app.calculate_btn_state()

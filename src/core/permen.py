@@ -67,9 +67,18 @@ class PermutationEntropy(Entropy):
         patterns = []
         counts = []
         stride = 1 if stride is None else stride
-        num_elements = len(seq) - stride * size + 1
-        for idx in range(num_elements):
-            current_pattern = PermutationEntropy.extract_pattern(seq[idx:idx + stride * size: stride])
+        for idx in range(len(seq)):
+            i = idx
+            acc_seq = []
+            while True:
+                acc_seq.append(seq[i])
+                i += stride
+                if i >= len(seq) or len(acc_seq) == size:
+                    break
+            if len(acc_seq) != size:
+                break
+
+            current_pattern = PermutationEntropy.extract_pattern(acc_seq)
             try:
                 position = patterns.index(current_pattern)
             except ValueError:
@@ -77,7 +86,7 @@ class PermutationEntropy(Entropy):
                 counts.append(1)
             else:
                 counts[position] += 1
-        return np.array(counts) / num_elements, np.array(patterns)
+        return np.array(counts) / sum(counts), np.array(patterns)
 
     @staticmethod
     def calculate(m, seq, stride):
@@ -115,7 +124,7 @@ class PermutationEntropy(Entropy):
 
             en_results = []
             for i in range(len(seq_list)):
-                calc_kwargs = dict(m=m, seq=seq_list[i])
+                calc_kwargs = dict(m=m, seq=seq_list[i], stride=stride_size)
                 en_results.append(cls.calculate(**calc_kwargs))
         except (ValueError, AssertionError):
             res_report.set_error("Error! For file {}".format(file_name))
@@ -126,6 +135,7 @@ class PermutationEntropy(Entropy):
         res_report.set_step_size(step_size)
         res_report.set_avg_rr(average_rr_list)
         res_report.set_result_values(en_results)
+        res_report.set_stride_value(1 if stride_size is None else stride_size)
         if normalize:
             res_report.set_normalized_values(PermutationEntropy.normalize_series(en_results, m))
 

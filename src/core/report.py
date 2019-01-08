@@ -189,12 +189,19 @@ class PermutationEntropyReport(IReport):
         super().__init__()
         self.avg_rr_values = []
         self.normalized_values = []
+        self.stride = None
 
     def set_avg_rr(self, rr_list):
         self.avg_rr_values = rr_list
 
     def get_avg_rr_values(self):
         return self.avg_rr_values
+
+    def set_stride_value(self, val):
+        self.stride = val
+
+    def get_stride_value(self):
+        return self.stride
 
     @classmethod
     def get_prefix(cls):
@@ -215,7 +222,7 @@ class PermutationEntropyReport(IReport):
         except IndexError:
             normalized_result = -1
         rr = self.get_avg_rr_value(window_idx)
-        return [str(result), str(normalized_result), str(rr)]
+        return [str(result), str(normalized_result), str(rr), str(self.get_stride_value())]
 
     def set_normalized_values(self, values):
         self.normalized_values = values
@@ -229,6 +236,7 @@ class PermutationEntropyReport(IReport):
         res_dic = super().to_json()
         res_dic['avg_rr_values'] = self.get_avg_rr_values()
         res_dic['normalized_values'] = self.get_avg_rr_values()
+        res_dic['stride'] = self.get_stride_value()
         return res_dic
 
 
@@ -300,7 +308,7 @@ class ReportManager:
             frac_dim_names = ['{}_{}'.format(FracDimReport.get_prefix(), n) for n in frac_dim_column_names]
             column_names.extend(frac_dim_names)
         if AnalysisType.PERM_EN in analysis_types:
-            perm_en_column_names = ['Entropy', 'Normalized_Entropy','Average_RR']
+            perm_en_column_names = ['Entropy', 'Normalized_Entropy','Average_RR', 'Stride']
             perm_en_names = ['{}_{}'.format(PermutationEntropyReport.get_prefix(), n) for n in perm_en_column_names]
             column_names.extend(perm_en_names)
         return column_names
@@ -378,7 +386,7 @@ class ReportManager:
             # samp_en_res, samp_en_r, samp_en_avg_rr,
             # cordim_res, cordim_radius,
             # fracdim_res, fracdim_start, fracdim_interval, fracdim_max_k, fracdim_max_m
-            # perm_en_res, perm_en_normalized_res, perm_en_avg_rr
+            # perm_en_res, perm_en_normalized_res, perm_en_avg_rr, perm_en_stride
             line_values.extend(ap_en_values)
             line_values.extend(samp_en_values)
             line_values.extend(cor_dim_values)

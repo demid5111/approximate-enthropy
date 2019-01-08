@@ -43,3 +43,11 @@ class PertropyWidget(QWidget):
 
     def is_normalization_used(self):
         return self.is_normalize_used
+
+    def get_stride(self):
+        res = 1
+        try:
+            res = int(self.stride_value.text())
+        except:
+            pass
+        return res
