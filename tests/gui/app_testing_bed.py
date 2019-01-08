@@ -30,6 +30,15 @@ class AppTestingBed:
     def press_cordim_cb(self):
         self._click(self.window.table_widget.is_use_cor_dim_cb)
 
+    def press_norm_permen_cb(self):
+        self._click(self.window.table_widget.pertropy_widget.normalize_cb)
+
+    def press_strides_permen_cb(self):
+        self._click(self.window.table_widget.pertropy_widget.strides_cb)
+
+    def set_strides_permen(self, val):
+        self.window.table_widget.pertropy_widget.stride_value.setText(val)
+
     def press_fracdim_cb(self):
         self._click(self.window.table_widget.is_use_frac_dim_cb)
 
