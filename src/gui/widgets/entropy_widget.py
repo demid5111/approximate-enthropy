@@ -43,7 +43,7 @@ class EntropyWidget(QWidget):
         self.samp_en_cb.setChecked(self.is_samp_en_used)
         self.samp_en_cb.clicked.connect(self.toggle_samp_en_cb)
 
-        self.threshold_cb = QCheckBox('Use threshold', self)
+        self.threshold_cb = QCheckBox('Check for threshold', self)
         self.is_threshold_used = True
         self.threshold_cb.setChecked(self.is_threshold_used)
         self.threshold_cb.clicked.connect(self.toggle_threshold_checkbox)

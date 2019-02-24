@@ -229,7 +229,7 @@ class ApEnWidget(QWidget):
         return fd_max_k
 
     def get_window_size(self):
-        return int(self.window_analysis_widget.get_window_size()) if self.is_windows_enabled else 0
+        return int(self.window_analysis_widget.get_window_size()) if self.is_windows_enabled else None
 
     def get_step_size(self):
-        return int(self.window_analysis_widget.get_window_step()) if self.is_windows_enabled else 0
+        return int(self.window_analysis_widget.get_window_step()) if self.is_windows_enabled else None

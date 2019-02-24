@@ -314,7 +314,7 @@ class ReportManager:
         return column_names
 
     @staticmethod
-    def prepare_header(analysis_types, res_dic):
+    def prepare_header(analysis_types, res_dic: dict):
         header_lines = [
             ['Analysis applied', *analysis_types],
         ]
@@ -327,17 +327,24 @@ class ReportManager:
             dimension = 'error'
         header_lines.append(['Dimension', dimension])
 
+        any_report_per_file = [res_dic[i][0] for i in res_dic.keys()]
         try:
-            length = any_report.get_seq_len()
+            min_length = min(map(lambda x: x.get_seq_len(), any_report_per_file))
         except AttributeError:
-            length = 'error'
-        header_lines.append(['Number of points', length])
+            min_length = 'error'
+        header_lines.append(['Minimum number of points', min_length])
+
+        try:
+            max_length = max(map(lambda x: x.get_seq_len(), any_report_per_file))
+        except AttributeError:
+            max_length = 'error'
+        header_lines.append(['Maximum number of points', max_length])
 
         try:
             window_size = any_report.get_window_size()
         except AttributeError:
             window_size = 'error'
-        header_lines.append(['Window size', window_size])
+        header_lines.append(['Window size', window_size if window_size else 'full sequence length'])
 
         try:
             step_size = any_report.get_step_size()

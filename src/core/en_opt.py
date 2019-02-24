@@ -238,7 +238,7 @@ class Entropy:
 
         res_report.set_seq_len(seq_len)
         res_report.set_window_size(window_size)
-        res_report.set_step_size(step_size)
+        res_report.set_step_size(step_size if step_size else 0)
         res_report.set_avg_rr(average_rr_list)
         res_report.set_result_values(en_results)
 
