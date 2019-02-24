@@ -163,6 +163,7 @@ class ApEnWidget(QWidget):
         self.progress_bar.setValue(val if val < 100 else 0)
 
     def show_message(self, source, file_names, report_path=None):
+        self.ok_button = QPushButton('Ok', self)
         self.dialog = QMessageBox(self)
         self.dialog.setWindowModality(False)
         all_files = "".join(["- {} \n".format(i) for i in file_names.split(',')])
@@ -170,6 +171,7 @@ class ApEnWidget(QWidget):
         if report_path:
             dialog_text += '\n Saved report in {}'.format(report_path)
         self.dialog.setText(dialog_text)
+        self.dialog.setDefaultButton(self.ok_button)
         self.dialog.show()
 
     def set_in_progress(self, v):
@@ -184,6 +186,8 @@ class ApEnWidget(QWidget):
         self.is_calc_ent = not self.is_calc_ent
         self.ent_widget.set_ap_en(self.is_calc_ent)
         self.ent_widget.set_samp_en(self.is_calc_ent)
+        if not self.is_calc_ent:
+            self.ent_widget.reset_to_default()
         self.check_run_button_state()
         self.ent_widget.setHidden(not self.is_calc_ent)
 
@@ -191,6 +195,8 @@ class ApEnWidget(QWidget):
         self.is_calc_pertropy = not self.is_calc_pertropy
         self.check_run_button_state()
         self.pertropy_widget.setHidden(not self.is_calc_pertropy)
+        if not self.is_calc_pertropy:
+            self.pertropy_widget.reset_to_default()
 
     def toggle_window_checkbox(self):
         self.is_windows_enabled = not self.is_windows_enabled
@@ -223,7 +229,7 @@ class ApEnWidget(QWidget):
         return fd_max_k
 
     def get_window_size(self):
-        return int(self.window_analysis_widget.get_window_size()) if self.is_windows_enabled else 0
+        return int(self.window_analysis_widget.get_window_size()) if self.is_windows_enabled else None
 
     def get_step_size(self):
-        return int(self.window_analysis_widget.get_window_step()) if self.is_windows_enabled else 0
+        return int(self.window_analysis_widget.get_window_step()) if self.is_windows_enabled else None

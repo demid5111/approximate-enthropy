@@ -51,3 +51,8 @@ class PertropyWidget(QWidget):
         except:
             pass
         return res
+
+    def reset_to_default(self):
+        self.normalize_cb.setChecked(True)
+        self.is_stride_used = True
+        self.toggle_stride_checkbox()

@@ -1,5 +1,6 @@
 # CUSTOM changes
 .idea/
+.vscode/
 .memory
 results/
 .gradle
@@ -14,4 +15,5 @@ htmlcov/
 *.pyc
 __pycache__/
 venv
+.venv
 dist
