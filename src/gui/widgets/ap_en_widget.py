@@ -184,6 +184,8 @@ class ApEnWidget(QWidget):
         self.is_calc_ent = not self.is_calc_ent
         self.ent_widget.set_ap_en(self.is_calc_ent)
         self.ent_widget.set_samp_en(self.is_calc_ent)
+        if not self.is_calc_ent:
+            self.ent_widget.reset_to_default()
         self.check_run_button_state()
         self.ent_widget.setHidden(not self.is_calc_ent)
 
@@ -191,6 +193,8 @@ class ApEnWidget(QWidget):
         self.is_calc_pertropy = not self.is_calc_pertropy
         self.check_run_button_state()
         self.pertropy_widget.setHidden(not self.is_calc_pertropy)
+        if not self.is_calc_pertropy:
+            self.pertropy_widget.reset_to_default()
 
     def toggle_window_checkbox(self):
         self.is_windows_enabled = not self.is_windows_enabled
