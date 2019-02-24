@@ -15,6 +15,9 @@ class AppTestingBed:
     def press_windows_cb(self):
         self._click(self.window.table_widget.window_cb)
 
+    def press_common_sampen_apen_cb(self):
+        self._click(self.window.table_widget.is_use_ent_cb)
+
     def press_apen_cb(self):
         self._click(self.window.table_widget.ent_widget.ap_en_cb)
 
@@ -71,44 +74,58 @@ class AppTestingBed:
     def check_modal_not_error(self) -> str:
         raise NotImplementedError
 
+    def enter_new_threshold(self, text):
+        self.window.table_widget.ent_widget.r_threshold.setText(text)
+
+    def press_threshold_cb(self):
+        self._click(self.window.table_widget.ent_widget.threshold_cb)
+    
+    def check_custom_modal_not_error(self, options):
+        text = self.window.table_widget.dialog.text()
+        to_check = list(itertools.permutations(options))
+        res_check = ['{} calculated for'.format(','.join(i)) in text for i in to_check]
+        assert any(res_check)
+        assert 'Saved report in' in text
+        return text.split('Saved report in')[1].strip()
+
+    def close_calculation_dialog(self):
+        self._click(self.window.table_widget.ok_button)
+    
+    def is_apen_selected(self):
+        return self.window.table_widget.ent_widget.ap_en_cb.isChecked()
+    
+    def is_sampen_selected(self):
+        return self.window.table_widget.ent_widget.samp_en_cb.isChecked()
+    
+    def is_threshold_selected(self):
+        cb = self.window.table_widget.ent_widget.threshold_cb
+        return cb.isChecked() and cb.isEnabled()
+    
+    def is_threshold_text(self, text):
+        return self.window.table_widget.ent_widget.r_threshold.text() == text
+    
+
 
 class SampleEnTestingBed(AppTestingBed):
     def check_modal_not_error(self):
-        text = self.window.table_widget.dialog.text()
-        assert 'SampEn calculated for' in text
-        assert 'Saved report in' in text
-        return text.split('Saved report in')[1].strip()
+        return self.check_custom_modal_not_error(['SampEn'])
 
 
 class ApEnTestingBed(AppTestingBed):
     def check_modal_not_error(self):
-        text = self.window.table_widget.dialog.text()
-        assert 'ApEn calculated for' in text
-        assert 'Saved report in' in text
-        return text.split('Saved report in')[1].strip()
+        return self.check_custom_modal_not_error(['ApEn'])
 
 
 class ComboApEnSampEnTestingBed(AppTestingBed):
     def check_modal_not_error(self):
-        text = self.window.table_widget.dialog.text()
-        assert 'ApEn,SampEn calculated for' in text or 'SampEn,ApEn calculated for' in text
-        assert 'Saved report in' in text
-        return text.split('Saved report in')[1].strip()
+        return self.check_custom_modal_not_error(['ApEn', 'SampEn'])
 
 
 class ComboApEnSampEnPermEnTestingBed(AppTestingBed):
     def check_modal_not_error(self):
-        text = self.window.table_widget.dialog.text()
-        combos = list(itertools.permutations(['ApEn', 'SampEn', 'PermEn']))
-        existed = ['{} calculated for'.format(','.join(sub)) in text for sub in combos]
-        assert any(existed)
-        assert 'Saved report in' in text
-        return text.split('Saved report in')[1].strip()
+        return self.check_custom_modal_not_error(['ApEn', 'SampEn', 'PermEn'])
 
 
 class PermEnTestingBed(AppTestingBed):
     def check_modal_not_error(self):
-        text = self.window.table_widget.dialog.text()
-        assert 'PermEn calculated for' in text
-        assert 'Saved report in' in text
-        return text.split('Saved report in')[1].strip()
+        return self.check_custom_modal_not_error(['PermEn'])

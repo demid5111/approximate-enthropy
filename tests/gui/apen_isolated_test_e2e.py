@@ -78,7 +78,7 @@ def test_apen_w_windows_ideal_seq(qtbot):
     test_app.press_calculate_btn()
 
     test_app.wait_until_calculation_is_done()
-    path = test_app.check_modal_not_error()
+    path = test_app.check_custom_modal_not_error(['ApEn'])
     check_report(path)
 
 
@@ -121,7 +121,7 @@ def test_apen_wo_windows_resetting_state(qtbot):
     test_app.press_calculate_btn()
 
     test_app.wait_until_calculation_is_done()
-    path = test_app.check_modal_not_error()
+    path = test_app.check_custom_modal_not_error(['SampEn'])
     check_report(path)
 
     test_app.close_calculation_dialog()

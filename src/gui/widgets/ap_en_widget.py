@@ -163,6 +163,7 @@ class ApEnWidget(QWidget):
         self.progress_bar.setValue(val if val < 100 else 0)
 
     def show_message(self, source, file_names, report_path=None):
+        self.ok_button = QPushButton('Ok', self)
         self.dialog = QMessageBox(self)
         self.dialog.setWindowModality(False)
         all_files = "".join(["- {} \n".format(i) for i in file_names.split(',')])
@@ -170,6 +171,7 @@ class ApEnWidget(QWidget):
         if report_path:
             dialog_text += '\n Saved report in {}'.format(report_path)
         self.dialog.setText(dialog_text)
+        self.dialog.setDefaultButton(self.ok_button)
         self.dialog.show()
 
     def set_in_progress(self, v):
