@@ -4,7 +4,7 @@ Algorithms implemented:
 basis of the fractal theory. Physica D 31:277–283
 *
 """
-from math import floor, log
+from math import log, ceil
 
 from src.core.apen import ApEn
 from src.core.dim_utils import DimUtils
@@ -40,20 +40,21 @@ class FracDim(ApEn):
 
     @staticmethod
     def max_index(original_length, initial_time, interval_time):
-        return floor((original_length - initial_time)/interval_time)
+        res = (original_length - initial_time) / interval_time
+        return ceil(res) if (float(res) % 1) >= 0.5 else round(res)
 
     @staticmethod
     def calculate_curve_length(curve, original_length, initial_time, interval_time):
         a = FracDim.max_index(original_length, initial_time, interval_time)
-        norm_factor = (original_length - 1)/(a * interval_time)
+        norm_factor = (original_length - 1) / (a * interval_time)
         diffs = []
         for (index, value) in enumerate(curve):
             if index == 0:
                 continue
-            diff = value - curve[index-1]
+            diff = value - curve[index - 1]
             diffs.append(abs(diff))
 
-        return sum(diffs) * norm_factor
+        return sum(diffs) * norm_factor * (1 / interval_time)
 
     @staticmethod
     def prepare_curve(old_seq, initial_time, interval_time):
@@ -61,16 +62,16 @@ class FracDim(ApEn):
         assert initial_time < len(old_seq), 'Initial time should be integer'
         assert isinstance(interval_time, int), 'Interval time should be integer'
 
-        total = len(old_seq)
-        res_seq = []
-        step_num = 0
-        while True:
-            new_index = initial_time + step_num * interval_time
-            step_num += 1
-            if new_index >= total:
-                break
-            res_seq.append(old_seq[new_index])
-        return res_seq
+        # total = len(old_seq)
+        # res_seq = []
+        # step_num = 0
+        # while True:
+        #     new_index = initial_time + step_num * interval_time
+        #     step_num += 1
+        #     if new_index >= total:
+        #         break
+        #     res_seq.append(old_seq[new_index])
+        return old_seq[initial_time - 1::interval_time]
 
     @staticmethod
     def find_average_length_single(old_seq, interval_time):
@@ -81,11 +82,11 @@ class FracDim(ApEn):
         :return:
         """
         lengths = []
-        for m in range(interval_time):
+        for m in range(1, interval_time + 1):
             curve = FracDim.prepare_curve(old_seq, m, interval_time)
             res = FracDim.calculate_curve_length(curve, len(old_seq), m, interval_time)
             lengths.append(res)
-        return sum(lengths)/len(lengths)
+        return sum(lengths) / interval_time
 
     @staticmethod
     def find_average_length_multi(old_seq, max_interval_time):
@@ -97,19 +98,20 @@ class FracDim(ApEn):
         :return:
         """
         avg_lengths = []
-        for k in range(1, max_interval_time):
+        for k in range(1, max_interval_time + 1):
             avg_lengths.append(FracDim.find_average_length_single(old_seq, k))
         return avg_lengths
 
     @staticmethod
     def log_avg_lengths(avg_lengths):
-        return [log(i) for i in avg_lengths]
+        return [log(i) if i else 1 for i in avg_lengths]
 
     @staticmethod
     def calculate_slope(avg_lengths, max_k):
-        ref = [log(1/i if i > 0 else 1) for i in range(max_k)]
+        ref = [log(1 / i) for i in range(1, max_k+1)]
         log_avg_l = FracDim.log_avg_lengths(avg_lengths)
-        return LSM.calculate(list(zip(log_avg_l, ref)))[0]
+        # return LSM.calculate(list(zip(log_avg_l, ref)))[0]
+        return LSM.calculate(list(zip(ref, log_avg_l)))
 
 
 if __name__ == '__main__':
