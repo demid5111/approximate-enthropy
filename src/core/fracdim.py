@@ -4,6 +4,7 @@ Algorithms implemented:
 basis of the fractal theory. Physica D 31:277–283
 *
 """
+import math
 from math import log, ceil
 
 from src.core.apen import ApEn
@@ -45,7 +46,7 @@ class FracDim(ApEn):
 
     @staticmethod
     def calculate_curve_length(curve, original_length, initial_time, interval_time):
-        a = FracDim.max_index(original_length, initial_time, interval_time)
+        a = (original_length - initial_time) // interval_time
         norm_factor = (original_length - 1) / (a * interval_time)
         diffs = []
         for (index, value) in enumerate(curve):
@@ -98,7 +99,7 @@ class FracDim(ApEn):
         :return:
         """
         avg_lengths = []
-        for k in range(1, max_interval_time + 1):
+        for k in range(2, max_interval_time + 1):
             avg_lengths.append(FracDim.find_average_length_single(old_seq, k))
         return avg_lengths
 
@@ -109,6 +110,8 @@ class FracDim(ApEn):
     @staticmethod
     def calculate_slope(avg_lengths, max_k):
         ref = [log(1 / i) for i in range(1, max_k+1)]
+        if all(map(lambda x: x == 0, avg_lengths)):
+            return 1
         log_avg_l = FracDim.log_avg_lengths(avg_lengths)
         # return LSM.calculate(list(zip(log_avg_l, ref)))[0]
         return LSM.calculate(list(zip(ref, log_avg_l)))
