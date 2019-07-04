@@ -21,4 +21,4 @@ class DimUtils:
             new_seq = u_list[current_step * step_size:next_max]
             seq_list.append(new_seq)
 
-        return seq_list, window_size, step_size
+        return seq_list, window_size, step_size, len(u_list)

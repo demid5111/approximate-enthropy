@@ -26,7 +26,7 @@ class FracDim(ApEn):
         res_report.set_file_name(file_name)
 
         try:
-            seq_list, window_size, step_size = DimUtils.prepare_windows(file_name, window_size, step_size)
+            seq_list, window_size, step_size, seq_len = DimUtils.prepare_windows(file_name, window_size, step_size)
             fracdim_results = [FracDim.calculate_higuchi(i, max_k) for i in seq_list]
             res_report.set_window_size(window_size)
             res_report.set_step_size(step_size)
@@ -36,6 +36,7 @@ class FracDim(ApEn):
 
         res_report.set_max_k(max_k)
         res_report.set_result_values(fracdim_results)
+        res_report.set_seq_len(seq_len)
 
         return res_report
 
