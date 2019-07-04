@@ -64,15 +64,6 @@ class FracDim(ApEn):
         assert initial_time < len(old_seq), 'Initial time should be integer'
         assert isinstance(interval_time, int), 'Interval time should be integer'
 
-        # total = len(old_seq)
-        # res_seq = []
-        # step_num = 0
-        # while True:
-        #     new_index = initial_time + step_num * interval_time
-        #     step_num += 1
-        #     if new_index >= total:
-        #         break
-        #     res_seq.append(old_seq[new_index])
         return old_seq[initial_time - 1::interval_time]
 
     @staticmethod
@@ -114,7 +105,6 @@ class FracDim(ApEn):
         if all(map(lambda x: x == 0, avg_lengths)):
             return 1
         log_avg_l = FracDim.log_avg_lengths(avg_lengths)
-        # return LSM.calculate(list(zip(log_avg_l, ref)))[0]
         return LSM.calculate(list(zip(ref, log_avg_l)))
 
 
