@@ -103,12 +103,16 @@ class AppTestingBed:
     
     def is_threshold_text(self, text):
         return self.window.table_widget.ent_widget.r_threshold.text() == text
-    
 
 
 class SampleEnTestingBed(AppTestingBed):
     def check_modal_not_error(self):
         return self.check_custom_modal_not_error(['SampEn'])
+
+
+class FracDimTestingBed(AppTestingBed):
+    def check_modal_not_error(self):
+        return self.check_custom_modal_not_error(['FracDim'])
 
 
 class ApEnTestingBed(AppTestingBed):
