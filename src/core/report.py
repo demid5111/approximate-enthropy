@@ -11,7 +11,7 @@ class IReport:
     def __init__(self):
         self.err_msg = None
         self.prefix = ''
-        self.dimension = 'NONE'
+        self.dimension = 'N/A'
 
     def set_window_size(self, w):
         self.window_size = w
