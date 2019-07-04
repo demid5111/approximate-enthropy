@@ -124,7 +124,7 @@ class TestFracDimFindAverageLengthMultipleK(unittest.TestCase, ConfigTest):
         max_k = 3
         result = self.fracDim.find_average_length_multi(self.raw_series, max_k)
         expected = [29.0, 8.5, 3.45679]
-        for l,r in zip(expected, result):
+        for l, r in zip(expected, result):
             self.assertAlmostEqual(l, r, places=4)
 
 
@@ -157,64 +157,112 @@ class TestFracDimCalculation(unittest.TestCase, ConfigTest):
         self.fracDim = FracDim()
 
     def test_deviation1(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '1.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'cosin_random_ampl_4_N_310.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=len(u_list) // 2)
-        self.assertAlmostEqual(res, 1, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.88171, places=4, msg='incorrect frac dim')
 
     def test_deviation2(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '2.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'cosin_random_ampl_4_N_600.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 0.85242, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.63519, places=4, msg='incorrect frac dim')
 
     def test_deviation3(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '3.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'real_data_1_N_401.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 0.85242, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.38991, places=4, msg='incorrect frac dim')
 
     def test_deviation4(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '4.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'real_data_2_N_401.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 0.60571, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.63234, places=4, msg='incorrect frac dim')
 
     def test_deviation5(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '5.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'real_data_3_N_345.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=len(u_list) // 2)
-        self.assertAlmostEqual(res, 1.80926, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.87767, places=4, msg='incorrect frac dim')
 
     def test_deviation6(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '6.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'real_data_4_N_334.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 1.84863, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.47539, places=4, msg='incorrect frac dim')
 
     def test_deviation7(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '7.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'real_data_5_N_318.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 1.57881, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.63094, places=4, msg='incorrect frac dim')
 
     def test_deviation8(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '8.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_600_ampl_2_N_300.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 1.53905, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.87068, places=4, msg='incorrect frac dim')
 
     def test_deviation9(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '9.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_600_ampl_3_N_300.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 1.63049, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.87121, places=4, msg='incorrect frac dim')
 
     def test_deviation10(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '10.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_ampl_4_N_304.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 1.60354, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.87046, places=4, msg='incorrect frac dim')
 
     def test_deviation11(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '11.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_ampl_8_N_300.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 1.58333, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.87068, places=4, msg='incorrect frac dim')
 
     def test_deviation12(self):
-        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', '12.txt'), False, 0)
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_ampl_20_N_300.txt'),
+                                          False, 0)
         res = self.fracDim.calculate_higuchi(u_list, max_k=20)
-        self.assertAlmostEqual(res, 1.61983, places=4, msg='incorrect frac dim')
+        self.assertAlmostEqual(res, 1.87068, places=4, msg='incorrect frac dim')
+
+    def test_deviation13(self):
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_ampl_20_N_600.txt'),
+                                          False, 0)
+        res = self.fracDim.calculate_higuchi(u_list, max_k=20)
+        self.assertAlmostEqual(res, 1.85130, places=4, msg='incorrect frac dim')
+
+    def test_deviation14(self):
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_ampl_rand_N_300.txt'),
+                                          False, 0)
+        res = self.fracDim.calculate_higuchi(u_list, max_k=20)
+        self.assertAlmostEqual(res, 1.62865, places=4, msg='incorrect frac dim')
+
+    def test_deviation15(self):
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_ampl_random_N_300.txt'),
+                                          False, 0)
+        res = self.fracDim.calculate_higuchi(u_list, max_k=20)
+        self.assertAlmostEqual(res, 1.77773, places=4, msg='incorrect frac dim')
+
+    def test_deviation16(self):
+        u_list = self.fracDim.read_series(os.path.join(self.resource_path, 'frac_dim', 'sinus_ampl_random_N_600.txt'),
+                                          False, 0)
+        res = self.fracDim.calculate_higuchi(u_list, max_k=20)
+        self.assertAlmostEqual(res, 1.77236, places=4, msg='incorrect frac dim')
+
+    def test_deviation17(self):
+        path = os.path.join(self.resource_path, 'frac_dim', 'sinus_cosinus_ampl_400_N_300.txt')
+        u_list = self.fracDim.read_series(path, False, 0)
+        res = self.fracDim.calculate_higuchi(u_list, max_k=20)
+        self.assertAlmostEqual(res, 1.75188, places=4, msg='incorrect frac dim')
+
+    def test_deviation18(self):
+        path = os.path.join(self.resource_path, 'frac_dim', 'straight_line_ampl_600_N_300.txt')
+        u_list = self.fracDim.read_series(path, False, 0)
+        res = self.fracDim.calculate_higuchi(u_list, max_k=20)
+        self.assertAlmostEqual(res, 1, places=4, msg='incorrect frac dim')
 
 
 if __name__ == '__main__':
