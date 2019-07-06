@@ -123,7 +123,7 @@ class TestFracDimFindAverageLengthMultipleK(unittest.TestCase, ConfigTest):
     def test_find_average_length_multi_0(self):
         max_k = 3
         result = self.fracDim.find_average_length_multi(self.raw_series, max_k)
-        expected = [9.5625, 8.5, 3.45679]
+        expected = [9.5625, 3.95061, 3.45679]
         for l, r in zip(expected, result):
             self.assertAlmostEqual(l, r, places=4)
 
