@@ -45,7 +45,7 @@ class ApproximateEntropy(Entropy):
 
     @staticmethod
     def calculate(m, seq, r):
-        c, c_next = Entropy.calculate_similarity(m, seq, r)
+        c, c_next = Entropy.calculate_similarity(m, seq, r, include_self_check=True)
         number_vectors = len(seq)
         c_avg = c / number_vectors
         c_next_avg = c_next / (number_vectors - 1)

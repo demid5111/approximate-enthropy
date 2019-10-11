@@ -18,7 +18,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.02040, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.02061, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_0_dev(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -27,7 +27,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.7,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.02040, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.02061, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_0_complex(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -36,7 +36,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.02040, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.02061, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_1_const(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -45,7 +45,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.13480, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.16353, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_1_dev(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -54,7 +54,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.18518, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.20067, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_1_complex(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -63,7 +63,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.17236, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.18526, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_2_const(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -72,7 +72,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.13994, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.17022, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_2_dev(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -81,7 +81,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.17185, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.18628, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_2_complex(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -90,7 +90,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.17721, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.18603, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_3_const(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -99,7 +99,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.16571, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.34032, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_3_dev(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -108,7 +108,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.29717, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0.33647, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_3_complex(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -117,7 +117,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.01015, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0., places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_4_const(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -126,7 +126,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.56509, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 2.63905, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_4_dev(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -135,7 +135,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 1.06521, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 1.37486, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_4_complex(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -144,7 +144,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.01015, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0., places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_apsamp_const(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -154,7 +154,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 1.75633, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 2.29666, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_apsamp_dev(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -164,7 +164,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 1.26286, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 1.29771, places=4, msg='incorrect SampEn')
 
     def test_calculate_sampen_apsamp_complex(self):
         r = self.apEn.prepare_calculate_windowed(m=2,
@@ -174,7 +174,7 @@ class TestSampEnCalculateOverallSampEn(unittest.TestCase, ConfigTest):
                                                  dev_coef_value=0.5,
                                                  use_threshold=False,
                                                  threshold_value=0)
-        self.assertAlmostEqual(r.get_result_value(0), 0.10184, places=4, msg='incorrect SampEn')
+        self.assertAlmostEqual(r.get_result_value(0), 0., places=4, msg='incorrect SampEn')
 
 
 if __name__ == '__main__':

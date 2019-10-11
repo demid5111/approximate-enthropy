@@ -126,13 +126,15 @@ class Entropy:
         return bucket[first:second]
 
     @staticmethod
-    def calculate_similar_vectors(seq, r, split_factor):
+    def calculate_similar_vectors(seq, r, split_factor, include_self_check=True):
         assert r >= 0, "Filtering threshold should be positive"
         number_vectors = len(seq)
-        c = np.ones((number_vectors,), dtype=np.int64)
+        generator = np.ones if include_self_check else np.zeros
+
+        c = generator((number_vectors,), dtype=np.int64)
         # assuming that we have the step equals one for building sequences of vectors
         # from the original series, we always know the number of vectors for m=m+1
-        c_next = np.ones((number_vectors - 1,), dtype=np.int64)
+        c_next = generator((number_vectors - 1,), dtype=np.int64)
 
         sums = np.sum(seq, axis=1)
         sums_normalized = Entropy.normalize_by_min(sums)
@@ -186,7 +188,7 @@ class Entropy:
         return windows, averages, max_distances, len(u_list)
 
     @staticmethod
-    def calculate_similarity(m, seq, r):
+    def calculate_similarity(m, seq, r, include_self_check=True):
         step = 1
 
         # 3. Form a sequence of vectors so that
@@ -200,7 +202,7 @@ class Entropy:
         # 4. Construct the C(i,m) - portion of vectors "similar" to i-th
         # similarity - d[x(j),x(i)], where d = max(a)|u(a)-u*(a)|
         # this is just the respective values subtraction
-        return Entropy.calculate_similar_vectors(m_sliced, r, split_factor=15)
+        return Entropy.calculate_similar_vectors(m_sliced, r, split_factor=15, include_self_check=include_self_check)
 
     @staticmethod
     def calculate(m, seq, r):
