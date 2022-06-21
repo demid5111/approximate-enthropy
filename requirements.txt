@@ -1,4 +1,4 @@
-numpy==1.14.5
+numpy==1.22.0
 pandas==0.23.4
 pyinstaller==3.3.1
 pyopenssl==18.0.0
